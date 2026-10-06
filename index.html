@@ -12,20 +12,28 @@
 body{margin:0;background:#F3F4F1}
 a{color:#0B5A73}a:hover{color:#073E50}
 </style>
-<style>html{scroll-behavior:smooth} section[id]{scroll-margin-top:16px}</style>
+<style>html{scroll-behavior:smooth} section[id]{scroll-margin-top:96px}
+@media (max-width:760px){
+ .hdr-in{padding:10px 16px !important; gap:6px !important}
+ .hdr-sub{display:none}
+ .hdr-nav{flex-wrap:nowrap !important; overflow-x:auto; width:100%; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+ .hdr-nav::-webkit-scrollbar{display:none}
+ .hdr-nav a{white-space:nowrap; padding:8px 12px !important}
+ section[id]{scroll-margin-top:110px}
+}</style>
 </head>
 <body>
 <div style="min-height: 100vh; background: #F3F4F1; color: #1B2328; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 16px; line-height: 1.55">
 
-<header style="background: #13222B; color: #F3F4F1">
-<div style="max-width: 1240px; margin: 0 auto; padding: 16px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<header style="position: sticky; top: 0; z-index: 100; background: #13222B; color: #F3F4F1; box-shadow: 0 2px 12px rgba(0,0,0,0.18)">
+<div class="hdr-in" style="max-width: 1240px; margin: 0 auto; padding: 16px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
 <div style="display: flex; align-items: center; gap: 12px">
 <div style="width: 36px; height: 36px; border-radius: 8px; background: #0B6E8A; display: flex; align-items: center; justify-content: center">
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg>
 </div>
-<div style="font-weight: 600; font-size: 17px">Paweł Ungier <span style="font-weight: 400; color: #C9D3D8">· Kierownik projektów</span></div>
+<div style="font-weight: 600; font-size: 17px">Paweł Ungier <span class="hdr-sub" style="font-weight: 400; color: #C9D3D8">· Kierownik projektów</span></div>
 </div>
-<nav aria-label="Menu główne" style="display: flex; flex-wrap: wrap; gap: 4px">
+<nav class="hdr-nav" aria-label="Menu główne" style="display: flex; flex-wrap: wrap; gap: 4px">
 <a href="#profil" style="color: #FFFFFF; text-decoration: none; padding: 10px 14px; border-radius: 6px; background: rgba(255,255,255,0.12); font-weight: 500">Profil zawodowy</a>
 <a href="#doswiadczenie" style="color: #C9D3D8; text-decoration: none; padding: 10px 14px; border-radius: 6px">Doświadczenie zawodowe</a>
 <a href="#obszary" style="color: #C9D3D8; text-decoration: none; padding: 10px 14px; border-radius: 6px">Obszary pracy</a>
@@ -37,16 +45,21 @@ a{color:#0B5A73}a:hover{color:#073E50}
 
 <main style="max-width: 1240px; margin: 0 auto; padding: 40px 24px 56px; display: flex; flex-direction: column; gap: 40px">
 
-<section id="profil" aria-labelledby="profil-h" style="background: #FFFFFF; border: 1px solid #DCE1E3; border-radius: 12px; padding: 32px 28px; display: flex; flex-wrap: wrap; gap: 32px">
-<div style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+<section id="profil" aria-labelledby="profil-h" style="background: #FFFFFF; border: 1px solid #DCE1E3; border-radius: 12px; overflow: hidden; display: flex; flex-wrap: wrap">
+<div style="flex: 0 1 420px; min-height: 460px; position: relative; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(120% 90% at 50% 30%, #1A5A82 0%, #0E3A5C 45%, #0A2238 100%)">
+<img src="portret.png" alt="Paweł Ungier" style="display: block; width: 100%; height: auto">
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 20px; background: linear-gradient(180deg, rgba(10,34,56,0) 0%, rgba(10,34,56,0.92) 70%); color: #FFFFFF">
+<div style="font-size: 22px; font-weight: 700; line-height: 1.2">Paweł Ungier</div>
+<div style="font-size: 15px; color: #C9DCE8">Kierownik Działu Projektów · Kierownik projektów</div>
+</div>
+</div>
+<div style="flex: 1 1 460px; min-width: 0; padding: 32px 32px; display: flex; flex-direction: column; gap: 14px">
 <div style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #0B5A73">O mnie</div>
 <h2 id="profil-h" style="margin: 0; font-size: 34px; line-height: 1.15; font-weight: 700">Profil zawodowy</h2>
 <p style="margin: 0; font-size: 17px; color: #2C373D">Wieloletnie doświadczenie w prowadzeniu projektów nauczyło mnie budowania relacji, skutecznej komunikacji i konsekwentnego doprowadzania projektów do celu. Dla mnie każda inicjatywa to połączenie kompetencji organizacyjnych, przywódczych i interpersonalnych.</p>
 <p style="margin: 0; font-size: 17px; color: #2C373D">Podejście analityczne na poziomie planowania i organizacji, stosowna dystrybucja informacji, zarządzanie ryzykiem oraz negocjacje to według mnie podstawy do sprawnego działania i wdrażania adekwatnych produktów. Koncentruję się na implementacji w uzgodnionym zakresie, czasie, budżecie oraz wymaganej jakości.</p>
 <p style="margin: 0; font-size: 17px; color: #2C373D">Idealnie odnajduję się w grupie. Jako lider sprawnie buduję i zarządzam złożonymi zespołami. Dostrzegam w ludziach potencjał, swoją pozycję w grupie opieram na wzajemnym szacunku i zaufaniu. Nie widzę problemów – jedynie sytuacje wymagające odpowiedniego podejścia. Szczerość, otwarta komunikacja i obustronny feedback to moje podstawowe narzędzia.</p>
-</div>
-<div style="flex: 1 1 280px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
-<blockquote style="margin: 0; padding: 20px 22px; border-radius: 10px; background: #13222B; color: #F3F4F1; font-size: 20px; line-height: 1.4; font-weight: 500">„Nie widzę problemów – jedynie sytuacje wymagające odpowiedniego podejścia.”</blockquote>
+<blockquote style="margin: 0; padding: 20px 22px; border-radius: 10px; background: #13222B; color: #F3F4F1; font-size: 19px; line-height: 1.4; font-weight: 500">„Nie widzę problemów – jedynie sytuacje wymagające odpowiedniego podejścia.”</blockquote>
 <div>
 <div style="font-weight: 600; margin-bottom: 8px">Kluczowe kompetencje</div>
 <div style="display: flex; flex-wrap: wrap; gap: 8px">
