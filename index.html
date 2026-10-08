@@ -121,10 +121,10 @@
 }
 :root{
   --display:Sora,"Segoe UI",system-ui,sans-serif; --body:Manrope,"Segoe UI",system-ui,sans-serif;
-  --ink:#080A1C; --ink-2:#0E1130; --surface:rgba(23,25,58,.62); --surface-solid:#14173A;
-  --line:rgba(170,160,255,.14); --line-strong:rgba(170,160,255,.32);
+  --ink:#1A1E46; --ink-2:#222759; --surface:rgba(52,57,118,.62); --surface-solid:#2A2F66;
+  --line:rgba(190,182,255,.2); --line-strong:rgba(190,182,255,.4);
   --violet:#7B6CF6; --violet-2:#9A8CFF; --lav:#C9C3FF; --teal:#3FB8C9;
-  --text:#ECEBFA; --muted:#A3A5C4; --dim:#7C7FA3;
+  --text:#F3F2FD; --muted:#C2C3DD; --dim:#A3A6C6;
   --r-lg:22px; --r-md:16px; --r-sm:10px;
   --max:1200px;
 }
@@ -141,16 +141,13 @@ h1,h2,h3,h4{font-family:var(--display);margin:0;letter-spacing:-.02em;line-heigh
 /* background atmosphere */
 .bg{position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:
-   radial-gradient(900px 600px at 78% -5%, rgba(110,90,255,.28), transparent 60%),
-   radial-gradient(700px 520px at -10% 35%, rgba(60,80,220,.18), transparent 60%),
+   radial-gradient(900px 600px at 78% -5%, rgba(130,110,255,.34), transparent 60%),
+   radial-gradient(700px 520px at -10% 35%, rgba(80,100,240,.24), transparent 60%),
    radial-gradient(800px 600px at 60% 110%, rgba(120,70,230,.16), transparent 60%),
    var(--ink)}
-.bg::after{content:"";position:absolute;inset:0;
-  background-image:linear-gradient(rgba(170,160,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(170,160,255,.045) 1px,transparent 1px);
-  background-size:64px 64px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 75%)}
 
 /* header */
-header{position:sticky;top:0;z-index:50;background:rgba(8,10,28,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:50;background:rgba(26,30,70,.8);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .hdr{display:flex;align-items:center;justify-content:space-between;gap:20px;height:72px}
 .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
 .mono{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:14px;color:var(--lav);background:radial-gradient(circle at 30% 30%,#23265C,#12143A);border:1px solid var(--line-strong);box-shadow:0 0 24px rgba(123,108,246,.35)}
@@ -177,23 +174,24 @@ nav a:hover{color:var(--text);background:rgba(170,160,255,.08)}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:56px;align-items:center}
 .pill{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--muted);padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.03)}
 .dot{width:8px;height:8px;border-radius:50%;background:#3DDC97;box-shadow:0 0 10px #3DDC97}
-.hero h1{font-size:clamp(52px,7.4vw,96px);font-weight:800;margin:26px 0 18px;letter-spacing:-.035em;line-height:.98;
+.hero h1{font-size:clamp(52px,7.4vw,96px);font-weight:800;margin:26px 0 12px;padding-bottom:.14em;letter-spacing:-.035em;line-height:1.02;
   background:linear-gradient(180deg,#FFFFFF 0%,#D9D5FF 55%,#A99EFF 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .role{font-family:var(--display);font-weight:600;font-size:21px;color:var(--text);margin:0 0 14px}
-.lede{font-size:19px;color:var(--muted);max-width:56ch;margin:0 0 30px}
+.lede{font-size:19px;color:var(--muted);max-width:56ch;margin:0 0 30px;text-align:justify;hyphens:auto}
 .cta{display:flex;flex-wrap:wrap;gap:12px}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:40px}
 .stat{padding:14px 16px;border-radius:var(--r-md);border:1px solid var(--line);background:rgba(255,255,255,.025)}
-.stat b{display:block;font-family:var(--display);font-size:22px;white-space:nowrap;font-weight:700;color:#fff;line-height:1.1}
+.cnt{font-style:normal;font-variant-numeric:tabular-nums;display:inline}
+.stat b{display:block;font-family:var(--display);font-size:22px;white-space:normal;font-weight:700;color:#fff;line-height:1.15}
 .stat span{font-size:13.5px;color:var(--muted);line-height:1.35;display:block;margin-top:4px}
 
 .photo{position:relative;justify-self:end;width:100%;max-width:460px}
 .photo::before{content:"";position:absolute;inset:-30px;border-radius:40px;background:radial-gradient(closest-side,rgba(123,108,246,.45),transparent);filter:blur(10px);z-index:-1}
-.frame{position:relative;border-radius:28px;padding:1px;background:linear-gradient(160deg,rgba(201,195,255,.55),rgba(123,108,246,.15) 40%,rgba(63,184,201,.35));box-shadow:0 30px 80px rgba(0,0,0,.55)}
-.frame-in{border-radius:27px;overflow:hidden;padding-top:56px;display:flex;align-items:flex-end;justify-content:center;
-  background:radial-gradient(110% 80% at 50% 25%,#1C5486 0%,#0F2F57 45%,#0A1A36 100%)}
+.frame{position:relative;border-radius:28px;padding:2px;background:conic-gradient(from var(--fa),#5B4BE0,#9A8CFF 18%,#3FB8C9 34%,#C9C3FF 50%,#7B6CF6 66%,#3FB8C9 82%,#5B4BE0);animation:flow 7s linear infinite;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.frame-in{border-radius:26px;overflow:hidden;padding-top:56px;display:flex;align-items:flex-end;justify-content:center;
+  background:radial-gradient(110% 80% at 50% 22%,#6A5CE8 0%,#3E3699 45%,#24205E 100%)}
 .frame-in img{width:100%;margin-bottom:-1px}
-.badge{position:absolute;padding:12px 16px;border-radius:14px;background:rgba(14,17,48,.82);backdrop-filter:blur(10px);border:1px solid var(--line-strong);box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.badge{position:absolute;padding:12px 16px;border-radius:14px;background:rgba(36,40,92,.88);backdrop-filter:blur(10px);border:1px solid var(--line-strong);box-shadow:0 12px 30px rgba(0,0,0,.4)}
 .badge b{font-family:var(--display);font-size:15px;display:block;line-height:1.25}
 .badge span{font-size:13px;color:var(--muted)}
 .badge.tl{top:-16px;right:-18px}
@@ -218,7 +216,7 @@ section{padding:72px 0;scroll-margin-top:80px}
 
 /* profil */
 .profil{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
-.profil p{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.profil p{color:var(--muted);margin:0 0 16px;max-width:62ch;text-align:justify;hyphens:auto}
 .profil p:first-of-type{color:var(--text);font-size:19px}
 .quote{padding:26px 28px;font-family:var(--display);font-size:22px;line-height:1.35;font-weight:600;color:#fff;position:relative;overflow:hidden}
 .quote::after{content:"";position:absolute;right:-60px;bottom:-60px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(123,108,246,.35),transparent 70%)}
@@ -242,7 +240,7 @@ section{padding:72px 0;scroll-margin-top:80px}
 .resp h4{font-size:18px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px}
 .resp h4 i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#8B7CFF,#5B4BE0);font-style:normal;flex:none}
 .list{margin:0;padding:0;list-style:none}
-.list li{position:relative;padding-left:22px;color:var(--muted);margin-bottom:7px;line-height:1.5;font-size:16px}
+.list li{text-align:justify;hyphens:auto;position:relative;padding-left:22px;color:var(--muted);margin-bottom:7px;line-height:1.5;font-size:16px}
 .list li::before{content:"";position:absolute;left:2px;top:.62em;width:8px;height:8px;border-radius:50%;border:2px solid var(--violet-2)}
 .cols{columns:2 300px;column-gap:40px}
 .cols li{break-inside:avoid}
@@ -275,13 +273,13 @@ section{padding:72px 0;scroll-margin-top:80px}
 
 /* methods */
 .methods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.method{overflow:hidden;display:flex;flex-direction:column}
-.method .img{background:#fff;aspect-ratio:4/3;display:grid;place-items:center;border-bottom:1px solid var(--line)}
-.method .img img{width:100%;height:100%;object-fit:contain}
-.method .body{padding:24px 26px 26px;display:flex;flex-direction:column;gap:12px;flex:1}
+.method{display:flex;flex-direction:column;padding:28px 26px 26px;gap:14px}
+.method .img{margin-top:auto;padding-top:10px;aspect-ratio:3/2;display:grid;place-items:center}
+.method .img img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 22px rgba(0,0,0,.35))}
+.method .body{display:flex;flex-direction:column;gap:12px}
 .method h3{font-size:22px;font-weight:700}
 .method p{margin:0;color:var(--muted);font-size:16px}
-.method .when{margin-top:auto;padding-top:14px;border-top:1px solid var(--line);font-size:14.5px;color:var(--dim)}
+.method .when{padding-top:14px;border-top:1px solid var(--line);font-size:14.5px;color:var(--dim)}
 .method .when b{color:var(--lav)}
 @media (max-width:1000px){.methods{grid-template-columns:1fr;max-width:620px}}
 
@@ -292,6 +290,38 @@ section{padding:72px 0;scroll-margin-top:80px}
 .contact .cta{justify-content:center;position:relative}
 footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
 @media (max-width:640px){.contact{padding:36px 22px}section{padding:52px 0}}
+#doswiadczenie .sec-head p{max-width:62ch;text-align:justify;hyphens:auto}
+.team span{text-align:justify;hyphens:auto}
+/* education */
+.edu{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:18px;align-items:stretch}
+.edu-col{display:grid;gap:18px}
+.edu-card{padding:30px 30px 28px}
+.edu-card h3{font-size:18px;font-weight:600;display:flex;align-items:center;gap:10px;margin-bottom:18px;color:var(--lav)}
+.edu-card h3 i{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#8B7CFF,#5B4BE0);font-style:normal;flex:none}
+.edu-big{font-family:var(--display);font-size:26px;font-weight:700;margin:0;line-height:1.2;color:#fff}
+.edu-sub{margin:8px 0 0;color:var(--muted);font-size:16px;line-height:1.55}
+.edu-list li{text-align:left}
+.edu-list>li{color:var(--text);font-size:17px;margin-bottom:14px}
+.edu-list b{font-family:var(--display);font-weight:600}
+.edu-list .sub{list-style:none;margin:10px 0 0;padding:0}
+.edu-list .sub li{position:relative;padding-left:18px;color:var(--muted);font-size:15.5px;margin-bottom:6px;line-height:1.45}
+.edu-list .sub li::before{content:"";position:absolute;left:2px;top:.62em;width:7px;height:2px;border-radius:2px;background:var(--violet-2)}
+@media (max-width:900px){.edu{grid-template-columns:1fr}}
+/* flowing border */
+@property --fa{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes flow{to{--fa:360deg}}
+.flow{position:relative;border-color:transparent}
+.flow::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;
+  background:conic-gradient(from var(--fa),rgba(154,140,255,.22),#9A8CFF 9%,#3FB8C9 18%,rgba(154,140,255,.22) 30%,rgba(154,140,255,.22) 55%,#C9C3FF 66%,#7B6CF6 74%,rgba(154,140,255,.22) 86%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:flow 7s linear infinite}
+.flow:nth-of-type(2)::after{animation-delay:-2.3s}
+.flow:nth-of-type(3)::after{animation-delay:-4.6s}
+/* methods carousel */
+.methods.carousel{grid-template-columns:1fr;gap:0;max-width:none}
+.methods.carousel .method{grid-area:1/1;width:calc((100% - 36px)/3);transform-origin:50% 50%;
+  transition:transform .9s cubic-bezier(.45,0,.2,1),opacity .4s ease}
 </style>
 </head>
 <body>
@@ -306,6 +336,7 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
    <a href="#obszary">Obszary pracy</a>
    <a href="#fazy">Fazy projektu</a>
    <a href="#metodyki">Metodyki</a>
+   <a href="#wyksztalcenie">Wykształcenie</a>
   </nav>
   <a class="btn btn-light" href="#kontakt">Kontakt</a>
  </div>
@@ -324,14 +355,14 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
     <a class="btn btn-ghost" href="#doswiadczenie">Zobacz doświadczenie</a>
    </div>
    <div class="stats">
-    <div class="stat"><b>20+ lat</b><span>w Polkomtel i Cyfrowym Polsacie</span></div>
-    <div class="stat"><b>~30</b><span>inicjatyw w portfelu rocznie</span></div>
-    <div class="stat"><b>50–60 mln zł</b><span>roczny budżet projektów</span></div>
-    <div class="stat"><b>17 osób</b><span>w zespole Działu Projektów</span></div>
+    <div class="stat"><b><em class="cnt" data-from="0" data-to="20" data-end="+">20+</em> lat</b><span>w Polkomtel i Cyfrowym Polsacie</span></div>
+    <div class="stat"><b>~<em class="cnt" data-from="0" data-to="30">30</em></b><span>inicjatyw w portfelu rocznie</span></div>
+    <div class="stat"><b><em class="cnt" data-from="0" data-to="50">50</em>–<em class="cnt" data-from="50" data-to="60">60</em> mln zł</b><span>roczny budżet projektów</span></div>
+    <div class="stat"><b><em class="cnt" data-from="0" data-to="17">17</em> osób</b><span>w zespole Działu Projektów</span></div>
    </div>
   </div>
   <div class="photo">
-   <div class="frame"><div class="frame-in"><img src="portret.png" alt="Paweł Ungier"></div></div>
+   <div class="frame"><div class="frame-in"><img src="portret-4.png" alt="Paweł Ungier"></div></div>
    <div class="badge tl"><b>PMI · Agile · Hybryda</b><span>dobór metodyki do projektu</span></div>
    <div class="badge bl"><b>Telekomunikacja</b><span>Polkomtel / Cyfrowy Polsat</span></div>
   </div>
@@ -348,7 +379,7 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
     <p>Idealnie odnajduję się w grupie. Jako lider sprawnie buduję i zarządzam złożonymi zespołami. Dostrzegam w ludziach potencjał, swoją pozycję w grupie opieram na wzajemnym szacunku i zaufaniu. Szczerość, otwarta komunikacja i obustronny feedback to moje podstawowe narzędzia.</p>
    </div>
    <div>
-    <blockquote class="glass quote" style="margin:0">„Nie widzę problemów – jedynie sytuacje wymagające odpowiedniego podejścia.”</blockquote>
+    <blockquote class="glass quote" style="margin:0">„Projekt to nie tylko zakres, budżet i harmonogram – to przede wszystkim zadowoleni interesariusze i wartość biznesowa.”</blockquote>
     <div class="chips">
      <span class="chip">Organizacja i planowanie</span><span class="chip">Przywództwo</span><span class="chip">Komunikacja</span><span class="chip">Budowanie relacji</span><span class="chip">Zarządzanie ryzykiem</span><span class="chip">Negocjacje</span><span class="chip">Budowanie zespołów</span>
     </div>
@@ -361,12 +392,12 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
  <div class="wrap">
   <div class="sec-head"><div><p class="kicker">Doświadczenie zawodowe</p><h2 class="h2">Od projektów do portfela</h2></div><p>Ponad dwie dekady w jednej z największych grup telekomunikacyjnych w Polsce – najpierw jako kierownik projektów, potem jako szef działu.</p></div>
 
-  <article class="glass job">
+  <article class="glass job flow">
    <div class="job-top"><div><h3>Kierownik Działu Projektów</h3><div class="co">Polkomtel sp. z o.o. oraz Cyfrowy Polsat S.A.</div></div><span class="years">2024 – 2026</span></div>
    <div class="team">
-    <div><b>8</b><strong>kierowników projektów</strong><span>ok. 30 inicjatyw rocznie, łączny budżet 50–60 mln zł</span></div>
-    <div><b>5</b><strong>pracowników back office</strong><span>utrzymanie i dostosowanie systemów obsługi posprzedażnej</span></div>
-    <div><b>4</b><strong>administratorów biznesowo-technicznych</strong><span>utrzymanie systemów call center</span></div>
+    <div><b><em class="cnt" data-from="0" data-to="8">8</em></b><strong>kierowników projektów</strong><span>ok. 30 inicjatyw rocznie, łączny budżet 50–60 mln zł</span></div>
+    <div><b><em class="cnt" data-from="0" data-to="5">5</em></b><strong>pracowników back office</strong><span>utrzymanie i dostosowanie systemów obsługi posprzedażnej</span></div>
+    <div><b><em class="cnt" data-from="0" data-to="4">4</em></b><strong>administratorów biznesowo-technicznych</strong><span>utrzymanie systemów call center</span></div>
    </div>
    <div class="resp">
     <div><h4><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></i>Koordynacja portfela projektów</h4>
@@ -380,11 +411,11 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
    </div>
   </article>
 
-  <article class="glass job">
+  <article class="glass job flow">
    <div class="job-top"><div><h3>Kierownik projektów</h3><div class="co">Polkomtel sp. z o.o.</div></div><span class="years">2001 – 2026</span></div>
    <div class="team team-2">
-    <div><b>3–5</b><strong>inicjatyw rocznie</strong><span>prowadzonych od identyfikacji potrzeb do kontroli powdrożeniowej</span></div>
-    <div><b>ok. 20 mln zł</b><strong>roczny budżet projektów</strong><span>planowanie, kontrola wydatków i optymalizacja kosztów</span></div>
+    <div><b><em class="cnt" data-from="0" data-to="3">3</em>–<em class="cnt" data-from="3" data-to="6">6</em></b><strong>inicjatyw rocznie</strong><span>prowadzonych od identyfikacji potrzeb do kontroli powdrożeniowej</span></div>
+    <div><b>ok. <em class="cnt" data-from="0" data-to="20">20</em> mln zł</b><strong>roczny budżet projektów</strong><span>planowanie, kontrola wydatków i optymalizacja kosztów</span></div>
    </div>
    <ul class="list cols"><li>identyfikacja potrzeb biznesowych</li><li>przygotowanie business case i pozyskanie finansowania</li><li>szczegółowe analizy i finalna wycena zmian</li><li>planowanie prac i przydzielanie zasobów</li><li>realizacja – dostarczenie zmian zgodnie z harmonogramem i budżetem</li><li>testy (środowiska: DEV, Scrum, UAT, FUT)</li><li>kontrola zasobów i budżetu, optymalizacja wydatków</li><li>identyfikacja i monitoring ryzyk</li><li>komercjalizacja techniczna i biznesowa</li><li>kontrola powdrożeniowa: „lessons learned” i „post review”</li><li>procesy przetargowe (ofertowanie, RFI, RFP), umowy ramowe i jednorazowe, zamówienia</li></ul>
   </article>
@@ -420,6 +451,7 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
    <li><b>Testy</b><span>środowiska Scrum, UAT, FUT</span></li>
    <li><b>Wdrożenie i komercjalizacja</b><span>uruchomienie i wprowadzenie na rynek</span></li>
    <li><b>Stabilizacja</b><span>usuwanie błędów, wsparcie użytkowników</span></li>
+   <li><b>Podsumowanie projektu</b><span>„lessons learned” – subiektywna ocena działań całego zespołu, wyciąganie wniosków</span></li>
    <li><b>Monitorowanie SLA i celów</b><span>stabilność, kontrola założeń business case</span></li>
    <li><b>Zamknięcie</b><span>odbiór, rozliczenie, wnioski</span></li>
   </ol>
@@ -431,16 +463,52 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
  <div class="wrap">
   <div class="sec-head"><div><p class="kicker">Metodyki</p><h2 class="h2">Metodyka dopasowana do projektu</h2></div><p>Dobieram sposób prowadzenia do charakteru projektu, wymagań klienta i organizacji.</p></div>
   <div class="methods">
-   <article class="glass method"><div class="img"><img src="pm-waterfall.jpg" alt="Model kaskadowy: kolejne etapy schodzą kaskadą, każdy zakończony odbiorem"></div><div class="body"><h3>PMI / Waterfall</h3><p>Kolejne etapy po kolei – następny zaczyna się po odbiorze poprzedniego. Szczegółowy plan, kamienie milowe, pełna dokumentacja, zmiany przez formalną procedurę.</p><div class="when"><b>Kiedy:</b> stałe wymagania, projekty regulowane, infrastruktura</div></div></article>
-   <article class="glass method"><div class="img"><img src="pm-scrum.jpg" alt="Scrum: cykl sprintu z planowaniem, realizacją, przeglądem i retrospektywą"></div><div class="body"><h3>Agile / Scrum</h3><p>Krótkie sprinty, po każdym działający fragment produktu. Backlog i priorytety ustalane z klientem, codzienne spotkania, przegląd i retrospektywa.</p><div class="when"><b>Kiedy:</b> zmienne wymagania, rozwój produktów cyfrowych</div></div></article>
-   <article class="glass method"><div class="img"><img src="pm-hybryda.jpg" alt="Podejście hybrydowe: kaskadowe planowanie, sprinty i kaskadowe wdrożenie"></div><div class="body"><h3>Hybrydowo</h3><p>Business case, budżet i wdrożenie prowadzone kaskadowo, realizacja w sprintach ze stałym feedbackiem. Formalne testy UAT i odbiór przed startem.</p><div class="when"><b>Kiedy:</b> duże organizacje – kontrola budżetu i elastyczność zespołu</div></div></article>
+   <article class="glass method flow"><div class="body"><h3>PMI / Waterfall</h3><p>Kolejne etapy po kolei – następny zaczyna się po odbiorze poprzedniego. Szczegółowy plan, kamienie milowe, pełna dokumentacja, zmiany przez formalną procedurę.</p><div class="when"><b>Kiedy:</b> stałe wymagania, projekty regulowane, infrastruktura</div></div><div class="img"><img src="pm-waterfall-tlo.png" alt="Model kaskadowy: kolejne etapy schodzą kaskadą, każdy zakończony odbiorem"></div></article>
+   <article class="glass method flow"><div class="body"><h3>Agile / Scrum</h3><p>Krótkie sprinty, po każdym działający fragment produktu. Backlog i priorytety ustalane z klientem, codzienne spotkania, przegląd i retrospektywa.</p><div class="when"><b>Kiedy:</b> zmienne wymagania, rozwój produktów cyfrowych</div></div><div class="img"><img src="pm-scrum-tlo.png" alt="Scrum: cykl sprintu z planowaniem, realizacją, przeglądem i retrospektywą"></div></article>
+   <article class="glass method flow"><div class="body"><h3>Hybrydowo</h3><p>Business case, budżet i wdrożenie prowadzone kaskadowo, realizacja w sprintach ze stałym feedbackiem. Formalne testy UAT i odbiór przed startem.</p><div class="when"><b>Kiedy:</b> duże organizacje – kontrola budżetu i elastyczność zespołu</div></div><div class="img"><img src="pm-hybryda-tlo.png" alt="Podejście hybrydowe: kaskadowe planowanie, sprinty i kaskadowe wdrożenie"></div></article>
+  </div>
+ </div>
+</section>
+
+<section id="wyksztalcenie">
+ <div class="wrap">
+  <div class="sec-head"><div><p class="kicker">Wykształcenie</p><h2 class="h2">Wiedza, na której opieram praktykę</h2></div><p>Wykształcenie ekonomiczne i szkolenia z zarządzania projektami – klasycznego i zwinnego.</p></div>
+  <div class="edu">
+   <div class="edu-col">
+    <article class="glass edu-card flow">
+     <h3><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5"/></svg></i>Wykształcenie</h3>
+     <p class="edu-big">Magister ekonomii</p>
+     <p class="edu-sub">Politechnika Radomska, Wydział Ekonomii<br>kierunek: zarządzanie</p>
+    </article>
+    <article class="glass edu-card flow">
+     <h3><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/></svg></i>Język</h3>
+     <p class="edu-big">Angielski</p>
+     <p class="edu-sub">poziom średni</p>
+    </article>
+   </div>
+   <article class="glass edu-card flow">
+    <h3><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M8.5 13l-1.5 8 5-3 5 3-1.5-8"/></svg></i>Szkolenia i certyfikaty</h3>
+    <ul class="list edu-list">
+     <li><b>Agile PM</b> / APMG International</li>
+     <li><b>PMI – PMBOK</b>
+      <ul class="sub">
+       <li>skuteczne zarządzanie projektami</li>
+       <li>aspekty finansowe realizacji projektów</li>
+       <li>narzędzia wspomagające realizację projektów</li>
+       <li>zarządzanie wiedzą</li>
+       <li>zarządzanie zespołem</li>
+      </ul>
+     </li>
+     <li><b>Corporate finance</b></li>
+    </ul>
+   </article>
   </div>
  </div>
 </section>
 
 <section id="kontakt">
  <div class="wrap">
-  <div class="glass contact">
+  <div class="glass contact flow">
    <h2 class="h2">Porozmawiajmy o współpracy</h2>
    <p>Szukam nowego wyzwania jako kierownik projektów lub kierownik działu projektów. Chętnie opowiem o projektach, które prowadziłem.</p>
    <div class="cta"><a class="btn btn-primary" href="mailto:ungier.pawel@gmail.com">Napisz e-mail</a><a class="btn btn-ghost" href="#top">Wróć na górę</a></div>
@@ -449,5 +517,54 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
 </section>
 </main>
 <footer>© 2026 Paweł Ungier · ungierpawel.pl</footer>
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('.cnt'));
+  if(!els.length || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var DUR=5000;
+  function run(el){
+    var from=+el.dataset.from, to=+el.dataset.to, end=el.dataset.end||'', t0=null;
+    el.textContent=from;
+    function tick(t){
+      if(t0===null) t0=t;
+      var k=Math.min((t-t0)/DUR,1);
+      el.textContent=Math.floor(from+(to-from)*k) + (k>=1?end:'');
+      if(k<1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+  els.forEach(function(el){ el.textContent=el.dataset.from; });
+  if(!('IntersectionObserver' in window)){ els.forEach(run); return; }
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ io.unobserve(e.target); run(e.target); } });
+  },{threshold:0.6});
+  els.forEach(function(el){ io.observe(el); });
+})();
+</script>
+<script>
+(function(){
+  var wrap=document.querySelector('.methods'); if(!wrap) return;
+  var cards=[].slice.call(wrap.querySelectorAll('.method')); if(cards.length!==3) return;
+  if(!window.matchMedia || !matchMedia('(min-width:700px)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var GAP=18, STEP=4000, TOTAL=9, pos=[0,1,2], done=0, timer=null, paused=false;
+  wrap.classList.add('carousel');
+  function place(c,s){ c.style.transform='translateX(calc('+(s*100)+'% + '+(s*GAP)+'px)) scale('+(s===1?1:.8)+')'; c.style.zIndex=(s===1?3:(s===2?2:1)); }
+  cards.forEach(function(c,i){ place(c,pos[i]); });
+  function step(){
+    if(paused) return;
+    cards.forEach(function(c,i){
+      if(pos[i]===0){
+        pos[i]=2; c.style.opacity='0'; place(c,2); c.style.zIndex=0;
+        setTimeout(function(){ c.style.opacity='1'; c.style.zIndex=2; },650);
+      } else { pos[i]-=1; place(c,pos[i]); }
+    });
+    if(++done>=TOTAL){ clearInterval(timer); }
+  }
+  var io=new IntersectionObserver(function(es){
+    if(es[0].isIntersecting){ io.disconnect(); timer=setInterval(step,STEP); }
+  },{threshold:0.2});
+  io.observe(wrap);
+})();
+</script>
 </body>
 </html>
