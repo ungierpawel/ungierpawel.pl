@@ -325,6 +325,14 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
 .phases li.post::before{background:linear-gradient(135deg,#F7BE73,#E0843D)}
 .phases.seq li{opacity:0;transform:translateY(14px) scale(.97);transition:opacity .45s ease,transform .45s cubic-bezier(.2,.7,.2,1)}
 .phases.seq li.on{opacity:1;transform:none}
+/* podświetlenie kursora (cursor spotlight) */
+.spot{position:fixed;left:0;top:0;z-index:0;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .6s ease;
+  background:radial-gradient(circle,rgba(154,140,255,.95) 0%,rgba(154,140,255,.7) 18%,rgba(123,108,246,.42) 40%,rgba(123,108,246,.14) 58%,rgba(123,108,246,0) 72%);
+  filter:blur(18px);transform:translate3d(var(--mx,-300px),var(--my,-300px),0);will-change:transform}
+.spot.on{opacity:1}
+header,main,footer{position:relative;z-index:1}
+header{position:sticky;z-index:50}
+.glass{background-image:radial-gradient(95px circle at var(--cx,-999px) var(--cy,-999px),rgba(154,140,255,.42) 0%,rgba(154,140,255,.30) 25%,rgba(154,140,255,.16) 50%,rgba(154,140,255,.05) 75%,rgba(154,140,255,0) 100%)}
 </style>
 </head>
 <body>
@@ -466,8 +474,8 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
  <div class="wrap">
   <div class="sec-head"><div><p class="kicker">Metodyki</p><h2 class="h2">Model działania dopasowany do projektu</h2></div><p>Dobieram sposób prowadzenia do charakteru projektu, wymagań klienta i organizacji.</p></div>
   <div class="methods">
-   <article class="glass method flow"><div class="body"><h3>PMI / Waterfall</h3><p>Kolejne etapy po kolei – następny zaczyna się po odbiorze poprzedniego. Szczegółowy plan, kamienie milowe, pełna dokumentacja, zmiany przez formalną procedurę.</p><div class="when"><b>Kiedy:</b> stałe wymagania, zlecenia zewnętrzne, infrastruktura</div></div><div class="img"><img src="pm-waterfall-tlo.png" alt="Model kaskadowy: kolejne etapy schodzą kaskadą, każdy zakończony odbiorem"></div></article>
-   <article class="glass method flow"><div class="body"><h3>Agile / Scrum</h3><p>Krótkie sprinty, po każdym działający fragment produktu. Backlog i priorytety ustalane z klientem, codzienne spotkania, przegląd i retrospektywa.<br><br></p><div class="when"><b>Kiedy:</b> zmienne wymagania / szczegóły w trakcie, wymagana kontrola przyrostu, </div></div><div class="img"><img src="pm-scrum-tlo.png" alt="Scrum: cykl sprintu z planowaniem, realizacją, przeglądem i retrospektywą"></div></article>
+   <article class="glass method flow"><div class="body"><h3>Waterfall</h3><p>Kolejne etapy po kolei – następny zaczyna się po odbiorze poprzedniego. Szczegółowy plan, kamienie milowe, pełna dokumentacja, zmiany przez formalną procedurę.</p><div class="when"><b>Kiedy:</b> stałe wymagania, zlecenia zewnętrzne, infrastruktura</div></div><div class="img"><img src="pm-waterfall-tlo.png" alt="Model kaskadowy: kolejne etapy schodzą kaskadą, każdy zakończony odbiorem"></div></article>
+   <article class="glass method flow"><div class="body"><h3>Scrum</h3><p>Krótkie sprinty, po każdym działający fragment produktu. Backlog i priorytety ustalane z klientem, codzienne spotkania, przegląd i retrospektywa.<br><br></p><div class="when"><b>Kiedy:</b> zmienne wymagania / szczegóły w trakcie, wymagana kontrola przyrostu, </div></div><div class="img"><img src="pm-scrum-tlo.png" alt="Scrum: cykl sprintu z planowaniem, realizacją, przeglądem i retrospektywą"></div></article>
    <article class="glass method flow"><div class="body"><h3>Hybrydowo</h3><p>Business case, budżet i wdrożenie prowadzone kaskadowo, realizacja w sprintach ze stałym feedbackiem. Formalne testy UAT i odbiór przed startem.</p><div class="when"><b>Kiedy:</b> duże projekty – planowanie i kontrola przy tworzeniu iteracyjnym</div></div><div class="img"><img src="pm-hybryda-tlo.png" alt="Podejście hybrydowe: kaskadowe planowanie, sprinty i kaskadowe wdrożenie"></div></article>
   </div>
  </div>
@@ -588,7 +596,24 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
   function play(){ clear(); items.forEach(function(li,i){ timers.push(setTimeout(function(){ li.classList.add('on'); }, i*step)); }); }
   new IntersectionObserver(function(es){ if(es[0].isIntersecting) play(); else clear(); },{threshold:0.25}).observe(ol);
 })();
+
+/* podświetlenie kursora: miękka poświata podąża za kursorem, karty podświetlają się pod nim */
+(function(){
+  if(!window.matchMedia || !matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+  var spot=document.createElement('div'); spot.className='spot'; spot.setAttribute('aria-hidden','true');
+  document.body.insertBefore(spot,document.body.firstChild);
+  var tx=-300, ty=-300, x=tx, y=ty, raf=null, first=true;
+  var smooth=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tick(){ x+=(tx-x)*(smooth?0.14:1); y+=(ty-y)*(smooth?0.14:1);
+    spot.style.setProperty('--mx',x.toFixed(1)+'px'); spot.style.setProperty('--my',y.toFixed(1)+'px');
+    raf=(Math.abs(tx-x)>0.5||Math.abs(ty-y)>0.5)?requestAnimationFrame(tick):null; }
+  addEventListener('pointermove',function(e){ tx=e.clientX; ty=e.clientY; if(first){x=tx;y=ty;first=false;} spot.classList.add('on'); if(!raf) raf=requestAnimationFrame(tick);
+    var g=e.target.closest && e.target.closest('.glass'); if(g){ var r=g.getBoundingClientRect(); g.style.setProperty('--cx',(e.clientX-r.left)+'px'); g.style.setProperty('--cy',(e.clientY-r.top)+'px'); } },{passive:true});
+  document.addEventListener('pointerleave',function(){ spot.classList.remove('on'); });
+  document.addEventListener('pointerout',function(e){ var g=e.target.closest && e.target.closest('.glass'); if(g && !g.contains(e.relatedTarget)) g.style.setProperty('--cx','-999px'); });
+})();
 </script>
+
 
 
 </body></html>
