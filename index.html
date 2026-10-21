@@ -335,6 +335,121 @@ footer{padding:36px 0 48px;color:var(--dim);font-size:14px;text-align:center}
 header,main,footer{position:relative;z-index:1}
 header{position:sticky;z-index:50}
 .glass{background-image:radial-gradient(95px circle at var(--cx,-999px) var(--cy,-999px),rgba(154,140,255,.42) 0%,rgba(154,140,255,.30) 25%,rgba(154,140,255,.16) 50%,rgba(154,140,255,.05) 75%,rgba(154,140,255,0) 100%)}
+
+/* ===== sekcja Projekt: mapa połączenia ===== */
+#projekt{
+  --ink:#1A1E46; --panel:#20255A; --text:#F3F2FD; --muted:#BFC1DD; --dim:#9EA1C4;
+  --line:#8B7CFF; --data:#3FB8C9; --lav:#C9C3FF;
+  --display:"Sora","Segoe UI",system-ui,sans-serif; --body:"Manrope","Segoe UI",system-ui,sans-serif;
+  
+}
+#projekt .map{border-radius:24px;background:var(--panel);border:1px solid rgba(190,182,255,.22);padding:clamp(10px,2.4vw,26px) clamp(6px,2vw,22px) 8px;overflow:hidden}
+#projekt svg{display:block;width:100%;height:auto}
+#projekt .track{fill:none;stroke-linecap:round;stroke-linejoin:round}
+#projekt .main-bg{stroke:rgba(139,124,255,.22);stroke-width:14}
+#projekt .main{stroke:var(--line);stroke-width:14}
+#projekt .data-bg{stroke:rgba(63,184,201,.22);stroke-width:9}
+#projekt .data{stroke:var(--data);stroke-width:9}
+#projekt .st circle.o{fill:#fff;stroke:var(--ink);stroke-width:5;transition:r .35s ease}
+#projekt .st circle.ring{fill:none;stroke:#fff;stroke-width:2;opacity:0}
+#projekt .st.x circle.o{stroke-width:6}
+#projekt .ic{fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;transform:translate(-13.2px,-13.2px) scale(1.1)}
+#projekt .st text.l{font-family:var(--display);font-weight:600;font-size:19px;fill:var(--muted);transition:fill .3s ease}
+#projekt .st text.s{font-family:var(--body);font-weight:500;font-size:14px;fill:var(--dim)}
+#projekt .st{cursor:pointer;outline:none}
+#projekt .st:focus-visible circle.o{stroke:var(--lav)}
+#projekt .st.visited text.l{fill:#fff}
+#projekt .st.on circle.o{r:25}
+#projekt .st.on text.l{fill:#fff}
+#projekt .st.on circle.ring{animation:pj-ping 1.4s ease-out infinite}
+@keyframes pj-ping{0%{r:23;opacity:.9}100%{r:42;opacity:0}}
+#projekt .train{fill:#fff;filter:drop-shadow(0 0 6px #fff) drop-shadow(0 0 14px var(--line))}
+#projekt .packet{fill:#DFFBFF;filter:drop-shadow(0 0 6px var(--data)) drop-shadow(0 0 12px var(--data));opacity:0}
+#projekt .pj-legend{font-family:var(--body);font-size:13.5px;fill:var(--dim)}
+@media (max-width:640px){#projekt .st text.l,#projekt .st text.s,#projekt .lg{display:none}
+#projekt .st circle.o{r:32}
+#projekt .st.on circle.o{r:35}
+#projekt .ic{transform:translate(-19.2px,-19.2px) scale(1.6);stroke-width:1.8}
+#projekt .main,#projekt .main-bg{stroke-width:22}
+#projekt .data,#projekt .data-bg{stroke-width:15}
+#projekt .train{r:15}
+#projekt .packet{r:12}
+#projekt .num{font-size:34px}}
+#projekt .board{display:grid;grid-template-columns:auto 1fr auto;gap:16px 22px;align-items:center;border-radius:20px;padding:18px 22px;background:#151937;border:1px solid rgba(190,182,255,.18)}
+@media (max-width:640px){#projekt .board{grid-template-columns:auto 1fr}
+#projekt .board .ctrl{grid-column:1/-1}}
+#projekt .num{font-family:var(--display);font-weight:800;font-size:40px;line-height:1;color:var(--line);font-variant-numeric:tabular-nums;min-width:2.2ch}
+#projekt .num small{font-size:16px;color:var(--dim);font-weight:600}
+#projekt .info h2{margin:0 0 4px;font-family:var(--display);font-weight:700;font-size:21px}
+#projekt .info p{margin:0;color:var(--muted);font-size:16px;line-height:1.5}
+#projekt .tag{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;font:700 12px/1.6 var(--body);vertical-align:3px;background:rgba(63,184,201,.16);color:#8EE2EE;border:1px solid rgba(63,184,201,.4)}
+#projekt .tag.main{background:rgba(139,124,255,.16);color:var(--lav);border-color:rgba(139,124,255,.45)}
+#projekt .ctrl{display:flex;gap:10px;flex-wrap:wrap}
+#projekt button{font:700 15px/1 var(--body);min-height:44px;padding:0 18px;border-radius:999px;border:1px solid rgba(190,182,255,.35);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}
+#projekt button.main{border:0;background:linear-gradient(135deg,#8B7CFF,#6A5AF0)}
+#projekt button:focus-visible{outline:3px solid var(--lav);outline-offset:3px}
+#projekt .dots{display:flex;gap:6px;margin-top:10px}
+#projekt .dots i{width:22px;height:4px;border-radius:2px;background:rgba(255,255,255,.14);transition:background .3s ease}
+#projekt .dots i.on{background:var(--line)}
+#projekt .dots i.d{background:var(--data)}
+@media (prefers-reduced-motion:reduce){#projekt .st.on circle.ring{animation:none}}
+#projekt .film{position:relative;overflow:hidden;border-radius:22px;padding:14px 0 16px;background:linear-gradient(180deg,rgba(16,20,56,.0),rgba(16,20,56,.55));
+  opacity:0;transform:translateY(46px);transition:opacity .9s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+#projekt .film.on{opacity:1;transform:none}
+#projekt .film::before,#projekt .film::after{content:"";position:absolute;top:0;bottom:0;width:9%;z-index:3;pointer-events:none}
+#projekt .film::before{left:0;background:linear-gradient(90deg,var(--ink),transparent)}
+#projekt .film::after{right:0;background:linear-gradient(270deg,var(--ink),transparent)}
+#projekt .strip{display:flex;align-items:flex-start;gap:28px;will-change:transform}
+#projekt .slide{flex:none;margin:0;opacity:.32;transform:scale(.9);transform-origin:50% 40%;transition:opacity .6s ease,transform .6s ease,filter .6s ease;filter:saturate(.7)}
+#projekt .slide.act{opacity:1;transform:none;filter:none}
+#projekt .slide .pic{position:relative;width:fit-content;height:var(--fh);border-radius:18px;overflow:hidden;border:1px solid rgba(190,182,255,.28);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+#projekt .slide.act .pic{border-color:rgba(139,124,255,.75);box-shadow:0 0 0 1px rgba(139,124,255,.35),0 0 34px rgba(139,124,255,.35),0 24px 60px rgba(0,0,0,.45)}
+#projekt .slide img,#projekt .slide canvas{display:block;height:100%;width:auto}
+#projekt .slide canvas{position:absolute;inset:0;width:100%;height:100%}
+#projekt .slide figcaption{margin-top:10px;font-size:15px;color:var(--muted);display:flex;gap:10px;align-items:center}
+#projekt .slide figcaption b{font-family:var(--display);color:#fff;font-size:16px}
+#projekt .slide figcaption span{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:700;background:rgba(139,124,255,.18);color:var(--lav);border:1px solid rgba(139,124,255,.45)}
+#projekt .film{--fh:min(400px,46vw)}
+@media (max-width:640px){#projekt .film{--fh:50vw}
+#projekt .strip{gap:16px}}
+@media (prefers-reduced-motion:reduce){#projekt .film,#projekt .slide,#projekt .strip{transition:none}}
+#projekt .pj-wrap{display:grid;gap:18px}
+#projekt svg{max-width:100%}
+#projekt button{font-family:var(--body)}
+/* Projekt na jednym ekranie: mapa i tablica po lewej, ilustracje po prawej */
+#projekt{padding:44px 0 40px}
+#projekt .pj-head{margin-bottom:18px}
+#projekt .pj-wrap{gap:14px}
+#projekt .board{padding:12px 18px;gap:10px 16px}
+#projekt .num{font-size:32px}
+#projekt .info h2{font-size:18px}
+#projekt .info p{font-size:14.5px;line-height:1.45}
+#projekt .ctrl button{min-height:38px;padding:0 14px;font-size:14px}
+@media (min-width:1000px){
+  #projekt .pj-wrap{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);grid-template-areas:"map film" "board film";align-items:start}
+  #projekt .map{grid-area:map}
+  #projekt .board{grid-area:board;grid-template-columns:auto 1fr;}
+  #projekt .board .ctrl{grid-column:1/-1}
+  #projekt .film{grid-area:film;align-self:stretch;display:flex;align-items:center;padding:0;--fh:min(300px,calc(100vh - 330px))}
+  #projekt .st text.l{font-size:22px}#projekt .st text.s{font-size:16px}
+}
+@media (max-width:640px){
+  #projekt{padding:28px 0 24px}
+  #projekt .pj-head{margin-bottom:12px}
+  #projekt .h2{font-size:28px}
+  #projekt .pj-wrap{gap:10px}
+  #projekt .film{--fh:40vw;padding:6px 0 8px}
+  #projekt .slide figcaption{margin-top:6px;font-size:13px}#projekt .slide figcaption b{font-size:14px}
+  #projekt .board{padding:10px 14px;gap:6px 12px}
+  #projekt .num{font-size:26px}
+  #projekt .info h2{font-size:16px}#projekt .info p{font-size:13.5px}
+  #projekt .dots{margin-top:6px}
+  #projekt .ctrl button{min-height:36px;font-size:13.5px}
+}
+#projekt .info h2{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:4px;align-content:flex-start}
+#projekt .info h2 .tag{margin-left:0}
+#projekt .slide figcaption{white-space:nowrap}
+#projekt .film .strip{min-height:calc(var(--fh) + 40px)}
 </style>
 </head>
 <body>
@@ -350,6 +465,7 @@ header{position:sticky;z-index:50}
    <a href="#fazy">Fazy projektu</a>
    <a href="#metodyki">Metodyki</a>
    <a href="#wyksztalcenie">Wykształcenie</a>
+   <a href="#projekt">Projekt</a>
   </nav>
   <a class="btn btn-light" href="#kontakt">Kontakt</a>
  </div>
@@ -519,6 +635,73 @@ header{position:sticky;z-index:50}
  </div>
 </section>
 
+<section id="projekt">
+ <div class="wrap">
+  <div class="sec-head pj-head"><div><p class="kicker">Przykładowy projekt</p><h2 class="h2">Obsługa ruchu telefonicznego</h2></div></div>
+  <div class="pj-wrap">
+  <div class="map">
+    <svg viewBox="10 22 980 404" id="svg" role="img" aria-labelledby="mt">
+      <title id="mt">Mapa drogi połączenia: Klient, Genesys inbound z odnogą do Bazy Genesys, IVR, Kontakt inbound z odnogą z Systemów zewnętrznych, Konsultant</title>
+      <!-- linie danych (pod spodem) -->
+      <path class="track data-bg" d="M270 280 V390"></path>
+      <path class="track data-bg" d="M720 110 V280"></path>
+      <path class="track data" id="d1" d="M270 280 V390"></path>
+      <path class="track data" id="d2" d="M720 110 V280"></path>
+      <!-- linia główna -->
+      <path class="track main-bg" d="M90 280 H270 L350 200 H520 L600 280 H910"></path>
+      <path class="track main" id="main" d="M90 280 H270 L350 200 H520 L600 280 H910"></path>
+      <circle class="packet" id="pk" r="7"></circle>
+      <circle class="train" id="train" r="9" cx="90" cy="280"></circle>
+
+      <!-- stacje -->
+      <g class="st x" data-i="0" tabindex="0" transform="translate(90 280)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"></path></g>
+        <text class="l" x="0" y="54" text-anchor="middle">Klient</text><text class="s" x="0" y="74" text-anchor="middle">dzwoni na infolinię</text></g>
+      <g class="st x" data-i="1" tabindex="0" transform="translate(270 280)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2.2"></circle><path d="M5.8 16.5a3.6 3.6 0 0 1 6.4 0M14 10h4M14 13.5h3"></path></g>
+        <text class="l" x="-36" y="-38" text-anchor="end">Genesys inbound</text><text class="s" x="-36" y="-17" text-anchor="end">identyfikacja</text></g>
+      <g class="st" data-i="2" tabindex="0" transform="translate(270 390)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"></ellipse><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"></path></g>
+        <text class="l" x="38" y="2" dominant-baseline="central">Baza Genesys</text><text class="s" x="38" y="24">segmentacja, kampania</text></g>
+      <g class="st x" data-i="3" tabindex="0" transform="translate(435 200)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><rect x="5" y="2.5" width="14" height="19" rx="2.5"></rect><path d="M9 7h.01M12 7h.01M15 7h.01M9 10.5h.01M12 10.5h.01M15 10.5h.01M9 14h.01M12 14h.01M15 14h.01M10 18h4" stroke-width="2.6"></path></g>
+        <text class="l" x="0" y="-42" text-anchor="middle">IVR</text><text class="s" x="0" y="-58" text-anchor="middle" style="display:none">menu</text></g>
+      <g class="st" data-i="4" tabindex="0" transform="translate(720 110)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><rect x="3.5" y="4" width="17" height="6" rx="1.5"></rect><rect x="3.5" y="14" width="17" height="6" rx="1.5"></rect><path d="M7 7h.01M7 17h.01M11 7h6M11 17h6" stroke-width="2.4"></path></g>
+        <text class="l" x="38" y="-2" dominant-baseline="central">Systemy zewnętrzne</text><text class="s" x="38" y="20">dane o kliencie</text></g>
+      <g class="st x" data-i="5" tabindex="0" transform="translate(720 280)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><path d="M4 14v-2a8 8 0 0 1 16 0v2"></path><rect x="3" y="13" width="4" height="6" rx="1.5"></rect><rect x="17" y="13" width="4" height="6" rx="1.5"></rect><path d="M19 19c0 1.5-2 2.5-5 2.5"></path></g>
+        <text class="l" x="0" y="54" text-anchor="middle">System CRM</text><text class="s" x="0" y="74" text-anchor="middle">wybór grupy</text></g>
+      <g class="st x" data-i="6" tabindex="0" transform="translate(910 280)"><circle class="ring" r="23"></circle><circle class="o" r="22"></circle><g class="ic"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></g>
+        <text class="l" x="0" y="54" text-anchor="middle">Konsultant</text><text class="s" x="0" y="74" text-anchor="middle">odbiera rozmowę</text></g>
+
+      <!-- legenda -->
+      <g class="lg" transform="translate(40 40)">
+        <line x1="0" y1="0" x2="34" y2="0" stroke="#8B7CFF" stroke-width="8" stroke-linecap="round"></line><text class="pj-legend" x="46" y="5">Droga połączenia</text>
+        <line x1="0" y1="26" x2="34" y2="26" stroke="#3FB8C9" stroke-width="6" stroke-linecap="round"></line><text class="pj-legend" x="46" y="31">Dane klienta</text>
+      </g>
+    </svg>
+
+  </div>
+
+  <div class="film" id="film" aria-label="Ilustracje etapów połączenia">
+    <div class="strip" id="strip">
+      <figure class="slide"><div class="pic"><img src="film-sip.jpg" alt="Telefony klientów łączą się przez chmurę z serwerami SBC i SIP, a stamtąd ruch trafia do call center i innych kanałów" width="1536" height="1024"></div>
+        <figcaption><span>stacje 1–3</span><b>Telefonia: SBC i SIP</b></figcaption></figure>
+      <figure class="slide"><div class="pic"><img src="film-ivr.jpg" alt="Serwer IVR z zapowiedziami głosowymi kieruje połączenia do kolejki konsultantów, działu technicznego, sprzedaży, reklamacji i infolinii" width="1536" height="1024"></div>
+        <figcaption><span>stacje 4–6</span><b>IVR i kierowanie połączenia</b></figcaption></figure>
+      <figure class="slide"><div class="pic" id="hxPhoto"><img src="konsultant-foto-4c.jpg" alt="Konsultantka przed zakrzywionym ekranem holograficznym z danymi klienta" width="960" height="760"><canvas id="hxCv" width="1920" height="1520"></canvas></div>
+        <figcaption><span>stacja 7</span><b>Konsultant z pełną wiedzą o kliencie</b></figcaption></figure>
+    </div>
+  </div>
+
+  <div class="board" aria-live="polite">
+    <div class="num" id="num">1<small>/7</small></div>
+    <div class="info">
+      <h2 id="nm">Klient<span class="tag main">linia połączenia</span></h2>
+      <p id="ds">Klient dzwoni na numer dostępowy infolinii – połączenie kierowane jest do wewnętrznej infrastruktury.</p>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="ctrl"><button type="button" id="pause" aria-pressed="false">Zatrzymaj</button><button type="button" class="main" id="replay">Od początku</button></div>
+  </div>
+  </div>
+ </div>
+</section>
+
 <section id="kontakt">
  <div class="wrap">
   <div class="glass contact flow">
@@ -617,5 +800,260 @@ header{position:sticky;z-index:50}
 </script>
 
 
+
+<script>
+(function(){
+  var ST=[
+    {n:'Klient',t:'main',d:'Klient dzwoni na numer dostępowy infolinii – połączenie kierowane jest do wewnętrznej infrastruktury.'},
+    {n:'Genesys inbound',t:'main',d:'System routingu (Genesys) odbiera połączenie i rozpoznaje klienta po numerze.'},
+    {n:'Baza Genesys',t:'data',d:'Oznaczenie klienta, segmentacja i przypisanie kampanii – dane wracają do Genesys.'},
+    {n:'IVR',t:'main',d:'Klient słyszy odpowiednie menu i hot news, wybiera sprawę w sprawie której dzwoni.'},
+    {n:'Systemy zewnętrzne',t:'data',d:'Informacja o kliencie pobierana z systemów zewnętrznych.'},
+    {n:'System CRM',t:'main',d:'Przekazanie połączenia do konkretnej grupy, razem z danymi klienta.'},
+    {n:'Konsultant',t:'main',d:'Konsultant odbiera rozmowę, prezentacja informacji / danych o kliencie.'}
+  ];
+  var $=function(id){return document.getElementById(id)};
+  var main=$('main'), train=$('train'), pk=$('pk'), d1=$('d1'), d2=$('d2');
+  var sts=[].slice.call(document.querySelectorAll('.st'));
+  var L=main.getTotalLength();
+  // długość linii przy każdej stacji głównej
+  function lenAt(x,y){ var best=0,bd=1e9; for(var s=0;s<=L;s+=2){ var p=main.getPointAtLength(s), dd=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y); if(dd<bd){bd=dd;best=s;} } return best; }
+  var POS={0:lenAt(90,280),1:lenAt(270,280),3:lenAt(435,200),5:lenAt(720,280),6:L};
+  [d1,d2].forEach(function(p){ var l=p.getTotalLength(); p.style.strokeDasharray=l; p.style.strokeDashoffset=l; p._l=l; });
+  main.style.strokeDasharray=L; main.style.strokeDashoffset=L;
+
+  // tablica
+  var dots=$('dots'); ST.forEach(function(){ dots.appendChild(document.createElement('i')); });
+  // stała wysokość tablicy: mierzymy najdłuższy opis, żeby nic nie skakało
+  function lockBoard(){
+    var bd=document.querySelector('#projekt .board')||document.querySelector('.board'), nm=$('nm'), ds=$('ds'), h0=nm.innerHTML, d0=ds.textContent, mx=0;
+    nm.style.height=''; ds.style.height='';
+    var all=ST.map(function(x){ return [x.n+'<span class="tag main">linia połączenia</span>', x.d]; });
+    all.push(['IVR i Systemy zewnętrzne<span class="tag">jednocześnie</span>','Połączenie przekazywane z IVR do CRM, a w tym samym czasie spływają dane klienta z systemów zewnętrznych.']);
+    var mn=0, md=0;
+    all.forEach(function(x){ nm.innerHTML=x[0]; ds.textContent=x[1]; mn=Math.max(mn,nm.getBoundingClientRect().height); md=Math.max(md,ds.getBoundingClientRect().height); });
+    nm.style.height=Math.ceil(mn)+'px'; ds.style.height=Math.ceil(md)+'px';
+    nm.innerHTML=h0; ds.textContent=d0;
+  }
+  window.addEventListener('resize',function(){ clearTimeout(lockBoard._t); lockBoard._t=setTimeout(lockBoard,120); });
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(lockBoard);
+  function board(i){
+    if(i===6 && window.hxRestart) window.hxRestart();
+    $('num').innerHTML=(i+1)+'<small>/7</small>';
+    $('nm').innerHTML=ST[i].n+'<span class="tag'+(ST[i].t==='main'?' main">linia połączenia':'">dane klienta')+'</span>';
+    $('ds').textContent=ST[i].d;
+    [].forEach.call(dots.children,function(d,j){ d.className=j<=i?(ST[j].t==='data'?'d':'on'):''; });
+    sts.forEach(function(s,j){ s.classList.toggle('on',j===i); if(j===i) s.classList.add('visited'); });
+  }
+
+  // oś czasu: kroki animacji
+  var HOLD=2000, RIDE=1100, DATA=900;
+  var steps=[
+    {at:0},                                   // Klient
+    {ride:[0,1]},                             // jazda do Genesys
+    {data:[d1,'out',2]},                      // odnoga do Bazy i z powrotem
+    {data:[d1,'back',1]},
+    {ride:[1,3]},                             // do IVR
+    {data:[d2,'down',4]},                     // dane z systemów zewnętrznych
+    {ride:[3,5]},                             // do Kontakt inbound
+    {ride:[5,6]}                              // do Konsultanta
+  ];
+  var q=[], cur=0, paused=false, t0=0, pausedAt=0, raf=null, mainDrawn=0;
+  function ease(k){return k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;}
+  function build(){
+    q=[];
+    q.push({type:'stop',i:0,dur:HOLD});
+    q.push({type:'ride',a:0,b:1,dur:RIDE}); q.push({type:'stop',i:1,dur:HOLD});
+    q.push({type:'data',p:d1,dir:1,dur:DATA,show:2}); q.push({type:'stop',i:2,dur:HOLD,train:false});
+    q.push({type:'data',p:d1,dir:-1,dur:DATA,show:1});
+    q.push({type:'ride',a:1,b:3,dur:RIDE*1.3}); q.push({type:'stop',i:3,dur:HOLD});
+    // jednocześnie: połączenie jedzie z IVR, a dane płyną z systemów zewnętrznych – oba docierają do Kontakt inbound
+    q.push({type:'both',a:3,b:5,p:d2,dur:RIDE*2.2}); q.push({type:'stop',i:5,dur:HOLD});
+    q.push({type:'ride',a:5,b:6,dur:RIDE}); q.push({type:'stop',i:6,dur:HOLD+800});
+  }
+  var film=$('film'), strip=$('strip'), slides=[].slice.call(strip.children);
+  function filmIndex(s){ // 0 = SBC/SIP, 1 = IVR, 2 = Konsultant
+    if(s<=POS[1]) return 0;
+    if(s<=POS[3]) return (s-POS[1])/(POS[3]-POS[1]);
+    if(s<=POS[5]) return 1;
+    return 1+(s-POS[5])/(POS[6]-POS[5]);
+  }
+  var lastF=0;
+  function setFilm(f){
+    lastF=f; var i0=Math.floor(f), i1=Math.min(slides.length-1,i0+1), t=f-i0;
+    var c0=slides[i0].offsetLeft+slides[i0].offsetWidth/2, c1=slides[i1].offsetLeft+slides[i1].offsetWidth/2;
+    var c=c0+(c1-c0)*t; strip.style.transform='translateX('+(film.clientWidth/2-c)+'px)';
+    slides.forEach(function(sl,j){ sl.classList.toggle('act',j===Math.round(f)); });
+  }
+  window.addEventListener('resize',function(){ setFilm(lastF); });
+  function setTrain(s){ setFilm(filmIndex(s)); var p=main.getPointAtLength(s); train.setAttribute('cx',p.x); train.setAttribute('cy',p.y); if(s>mainDrawn){mainDrawn=s; main.style.strokeDashoffset=L-s;} }
+  function run(now){
+    if(paused){ raf=requestAnimationFrame(run); return; }
+    var it=q[cur]; if(!it){ return; }
+    var k=Math.min(1,(now-t0)/it.dur), e=ease(k);
+    if(it.type==='ride'||it.type==='both'){ setTrain(POS[it.a]+(POS[it.b]-POS[it.a])*e); }
+    if(it.type==='data'||it.type==='both'){
+      var dir=it.type==='both'?1:it.dir, l=it.p._l, s=dir>0?l*e:l*(1-e), pt=it.p.getPointAtLength(s);
+      pk.style.opacity=1; pk.setAttribute('cx',pt.x); pk.setAttribute('cy',pt.y);
+      if(dir>0) it.p.style.strokeDashoffset=l*(1-e);
+    }
+    if(k>=1){ if(it.type==='data'||it.type==='both') pk.style.opacity=0; next(now); }
+    raf=requestAnimationFrame(run);
+  }
+  function next(now){
+    cur++; t0=now; var it=q[cur];
+    if(!it){ sts.forEach(function(s){s.classList.remove('on')}); return; }
+    if(it.type==='stop') board(it.i);
+    if(it.type==='both'){ board(4); $('nm').innerHTML='IVR i Systemy zewnętrzne<span class="tag">jednocześnie</span>'; $('ds').textContent='Połączenie przekazywane z IVR do CRM, a w tym samym czasie spływają dane klienta z systemów zewnętrznych.'; sts[3].classList.add('on'); }
+  }
+  function play(){
+    cancelAnimationFrame(raf); build(); cur=0; mainDrawn=0; paused=false; setPause();
+    main.style.strokeDashoffset=L; [d1,d2].forEach(function(p){p.style.strokeDashoffset=p._l});
+    sts.forEach(function(s){s.classList.remove('on','visited')}); pk.style.opacity=0;
+    film.classList.remove('on'); if(window.hxReset) window.hxReset(); setTimeout(function(){ film.classList.add('on'); },500);
+    setTrain(0); board(0); t0=performance.now(); raf=requestAnimationFrame(run);
+  }
+  function setPause(){ var b=$('pause'); b.setAttribute('aria-pressed',paused); b.textContent=paused?'Wznów':'Zatrzymaj'; }
+  $('pause').addEventListener('click',function(){
+    if(!paused){paused=true;pausedAt=performance.now();} else {t0+=performance.now()-pausedAt;paused=false;}
+    setPause();
+  });
+  $('replay').addEventListener('click',play);
+  // kliknięcie stacji: zatrzymaj i pokaż jej opis
+  sts.forEach(function(s){
+    function show(){ paused=true; pausedAt=performance.now(); setPause(); board(+s.getAttribute('data-i')); }
+    s.addEventListener('click',show);
+    s.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); show(); } });
+  });
+
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ main.style.strokeDashoffset=0; [d1,d2].forEach(function(p){p.style.strokeDashoffset=0}); setTrain(L); film.classList.add('on'); board(6); sts.forEach(function(s){s.classList.add('visited')}); return; }
+  lockBoard();
+  if('IntersectionObserver' in window){
+    new IntersectionObserver(function(es){ if(es[0].isIntersecting) play(); else cancelAnimationFrame(raf); },{threshold:.35}).observe($('svg'));
+  } else play();
+})();
+</script>
+<script>
+(function(){
+  var cv=document.getElementById('hxCv'), ctx=cv.getContext('2d'), K=2;          // płótno 2× rozmiaru zdjęcia (960×760)
+  // ---- geometria szyby na zdjęciu (współrzędne zdjęcia 960×760) ----
+  var TOP=[[100,40],[140,62],[180,80],[220,94],[260,106],[320,121],[400,138],[480,151],[560,162],[640,170],[652,171]];
+  var BOT=[[100,566],[140,546],[180,530],[220,518],[260,508],[320,497],[400,487],[480,479],[560,473],[640,468],[652,467]];
+  var X0=104, X1=648;                                  // zasięg treści w poziomie
+  function lerpPts(P,x){ for(var i=1;i<P.length;i++){ if(x<=P[i][0]){ var a=P[i-1],b=P[i],t=(x-a[0])/(b[0]-a[0]); return a[1]+(b[1]-a[1])*t; } } return P[P.length-1][1]; }
+  var EXP=1.18;                                         // lewa część bliżej widza – treść szersza, w prawo się zwęża
+  function uToX(u){ return X0+(X1-X0)*(1-Math.pow(1-u,EXP)); }
+  function xToU(x){ return 1-Math.pow(1-(x-X0)/(X1-X0),1/EXP); }
+  function top(x){ var t=lerpPts(TOP,x), b=lerpPts(BOT,x); return t+(b-t)*0.08; }
+  function bot(x){ var t=lerpPts(TOP,x), b=lerpPts(BOT,x); return b-(b-t)*0.1; }
+
+  // ---- płaska „tekstura” ekranu ----
+  var SW=1500, SH=560, src=document.createElement('canvas'); src.width=SW; src.height=SH; var s=src.getContext('2d');
+  var BOX=[
+    {x:30, y:14, w:705,h:186,t:'Dane klienta', it:[{c:0,l:0,r:['Klient','Paweł Ungier']},{c:1,l:0,r:['Klient od','2014']},{c:0,l:1,r:['Segment','Premium']},{c:1,l:1,r:['Kampania','Retencja']}]},
+    {x:765,y:14, w:705,h:186,t:'Usługi dodatkowe', it:[{c:0,l:0,li:['Internet 20 GB',1]},{c:0,l:1,li:['Ochrona telefonu',1]},{c:1,l:0,li:['Roaming w UE',0]}]},
+    {x:30, y:212,w:705,h:186,t:'Oferta dosprzedażowa', it:[{c:0,l:0,r:['Smartfon 5G','rata 0 zł']},{c:0,l:1,r:['Światłowód','1 Gb/s']},{c:1,l:0,pill:['★ rekomendacja','star']}]},
+    {x:765,y:212,w:705,h:186,t:'Płatności i należności', it:[{c:0,l:0,r:['Saldo','0,00 zł']},{c:0,l:1,r:['Ostatnia wpłata','12.10']},{c:1,l:0,pill:['bez zaległości','ok']}]},
+    {x:30, y:410,w:1440,h:140,t:'Połączenie przychodzące', kind:'call'}
+  ];
+  var t0=1e12, DELAY=[200,800,1400,2000,2600], DUR=900, MAX=180, callStart=t0+DELAY[4];
+  // kolory: bardzo jasna zieleń
+  var C={boxA:'rgba(232,243,255,.93)',boxB:'rgba(204,226,255,.9)',edge:'#3B82F6',glow:'rgba(80,150,255,.8)',scan:'rgba(40,90,180,.07)',
+         title:'#0B2A55',label:'#2C4E7E',value:'#061B3A',dot:'#16A34A',tint:'rgba(190,220,255,'};
+  var PHONE=new Path2D('M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2');
+
+  function rr(c,x,y,w,h,r){ c.beginPath(); c.moveTo(x+r,y); c.arcTo(x+w,y,x+w,y+h,r); c.arcTo(x+w,y+h,x,y+h,r); c.arcTo(x,y+h,x,y,r); c.arcTo(x,y,x+w,y,r); c.closePath(); }
+  function phoneIcon(cx,cy,r,col,rot,pulse){
+    s.save(); s.shadowBlur=pulse?28:12; s.shadowColor=col; s.fillStyle=col; s.beginPath(); s.arc(cx,cy,r,0,7); s.fill(); s.shadowBlur=0;
+    s.translate(cx,cy); s.rotate(rot); s.scale(r/17,r/17); s.translate(-12,-12);
+    s.fillStyle='#fff'; s.fill(PHONE); s.restore();
+  }
+  function drawBox(b,k,now){
+    if(k<=0) return;
+    s.save();
+    s.beginPath(); s.rect(b.x-30,b.y-30,b.w+60,(b.h+60)*k); s.clip();               // odsłanianie od góry
+    var fl=(Math.sin(now/90+b.x)>0.985)?1:.85;                                       // krótkie mignięcie
+    s.globalAlpha=Math.min(1,k*1.6);
+    rr(s,b.x,b.y,b.w,b.h,16);
+    var g=s.createLinearGradient(b.x,b.y,b.x+b.w*.3,b.y+b.h); g.addColorStop(0,C.boxA); g.addColorStop(1,C.boxB);
+    s.fillStyle=g; s.shadowColor=C.glow; s.shadowBlur=26; s.fill(); s.shadowBlur=0;
+    s.lineWidth=3.5; s.globalAlpha=Math.min(1,k*1.6)*fl; s.strokeStyle=C.edge; s.stroke(); s.globalAlpha=Math.min(1,k*1.6);
+    // linie skanowania i przesuwający się błysk
+    s.save(); rr(s,b.x,b.y,b.w,b.h,16); s.clip();
+    s.fillStyle=C.scan; for(var y=b.y;y<b.y+b.h;y+=6) s.fillRect(b.x,y,b.w,2);
+    var sw=((now/4500+b.x/1500)%1)*1.6-0.3, sx=b.x+b.w*sw, sg=s.createLinearGradient(sx-90,0,sx+90,0);
+    sg.addColorStop(0,'rgba(255,255,255,0)'); sg.addColorStop(.5,'rgba(255,255,255,.45)'); sg.addColorStop(1,'rgba(255,255,255,0)');
+    s.fillStyle=sg; s.fillRect(sx-90,b.y,180,b.h); s.restore();
+    // treść
+    s.shadowColor='rgba(255,255,255,.8)'; s.shadowBlur=6; s.fillStyle=C.title;
+    s.font='700 36px Sora, sans-serif'; s.textBaseline='alphabetic';
+    var px=b.x+26, py=b.y+54;
+    if(b.kind==='call'){
+      var el=Math.max(0,(now-callStart)/1000), sec=Math.min(MAX,Math.floor(el)), ended=el>=MAX;
+      if(el>=MAX+4){ callStart=now; el=0; sec=0; ended=false; }                     // po 4 s nowe połączenie
+      py=b.y+60;
+      phoneIcon(px+40,b.y+52,40,'#16A34A',0,!ended&&Math.sin(now/300)>0);
+      phoneIcon(px+136,b.y+52,40,'#DC2626',Math.PI*0.75,ended);
+      var ttx=px+204; s.fillStyle=C.title; s.fillText(ended?'Połączenie zakończone':b.t,ttx,py);
+      var tx=ttx+s.measureText('Połączenie przychodzące').width+40;
+      var f=function(v){return ('0'+Math.floor(v/60)).slice(-2)+':'+('0'+v%60).slice(-2)};
+      s.font='700 36px Manrope, sans-serif'; s.fillStyle=C.value; s.fillText(f(sec),tx,py);
+      var mw=s.measureText(f(sec)).width; s.font='600 28px Manrope, sans-serif'; s.fillStyle=C.label; s.fillText(' / '+f(MAX),tx+mw,py);
+      var wx=tx+mw+s.measureText(' / '+f(MAX)).width+36, wend=b.x+b.w-40;
+      s.fillStyle='#3B82F6'; for(var i=0;wx+i*18<wend;i++){ var h=ended?6:8+34*Math.abs(Math.sin(now/180+i*0.9)); s.fillRect(wx+i*18,py-14-h/2,9,h); }
+      // pasek długości rozmowy (max 180 s)
+      var bx=px, by=b.y+b.h-38, bw=b.w-52, bh=16, p=Math.min(1,el/MAX);
+      rr(s,bx,by,bw,bh,8); s.fillStyle='rgba(40,90,180,.16)'; s.fill();
+      if(p>0){ rr(s,bx,by,Math.max(bh,bw*p),bh,8); var pg=s.createLinearGradient(bx,0,bx+bw,0); pg.addColorStop(0,'#4ADE80'); pg.addColorStop(1,'#16A34A'); s.fillStyle=ended?'#DC2626':pg; s.shadowColor=C.glow; s.shadowBlur=12; s.fill(); s.shadowBlur=0; }
+    } else {
+      s.fillText(b.t,px,py);
+      var cw=(b.w-52)/2;
+      b.it.forEach(function(it){
+        var cx=px+it.c*(cw+26), ly=b.y+108+it.l*48;
+        s.font='600 30px Manrope, sans-serif'; s.textAlign='left';
+        if(it.r){ s.fillStyle=C.label; s.fillText(it.r[0],cx,ly); s.fillStyle=C.value; s.font='700 30px Manrope, sans-serif'; s.textAlign='right'; s.fillText(it.r[1],cx+cw-10,ly); s.textAlign='left'; }
+        if(it.li){ s.beginPath(); s.arc(cx+10,ly-10,9,0,7);
+          if(it.li[1]){ s.fillStyle=C.dot; s.fill(); } else { s.strokeStyle='rgba(22,163,74,'+((Math.sin(now/250)>0)?1:.35)+')'; s.lineWidth=3; s.stroke(); }
+          s.fillStyle=C.value; s.fillText(it.li[0],cx+34,ly); }
+        if(it.pill){ s.font='700 28px Manrope, sans-serif'; var tw=s.measureText(it.pill[0]).width+(it.pill[1]==='ok'?60:38), ph=46, py2=ly-32;
+          rr(s,cx,py2,tw,ph,23); s.lineWidth=2.5; s.strokeStyle=C.edge; s.stroke();
+          if(it.pill[1]==='ok'){ s.fillStyle='#16A34A'; s.beginPath(); s.arc(cx+24,py2+23,9,0,7); s.fill(); s.fillStyle=C.value; s.fillText(it.pill[0],cx+44,py2+33); }
+          else { s.fillStyle=(Math.sin(now/300)>0)?'#D99A00':'rgba(217,154,0,.35)'; s.fillText(it.pill[0].slice(0,1),cx+16,py2+33); s.fillStyle=C.value; s.fillText(it.pill[0].slice(1),cx+36,py2+33); }
+        }
+      });
+    }
+    s.restore();
+  }
+  function paintSource(now){
+    s.clearRect(0,0,SW,SH);
+    BOX.forEach(function(b,i){ var k=Math.max(0,Math.min(1,(now-t0-DELAY[i])/DUR)); k=1-Math.pow(1-k,3); drawBox(b,k,now); });
+  }
+  // ---- nawinięcie tekstury na zakrzywioną szybę: kolumna po kolumnie ----
+  function warp(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var x0=X0*K, x1=X1*K;
+    for(var dx=x0; dx<x1; dx+=1){
+      var x=dx/K, u0=xToU(x), u1=xToU(Math.min(X1,x+1/K)), sx=u0*SW, sw=Math.max(0.5,(u1-u0)*SW);
+      var ty=top(x)*K, by=bot(x)*K;
+      ctx.drawImage(src,sx,0,sw,SH,dx,ty,1.6,by-ty);
+    }
+  }
+  var last=0;
+  function frame(now){
+    if(now-last>32){ last=now; paintSource(now); warp(); }
+    requestAnimationFrame(frame);
+  }
+  window.hxRestart=function(){ t0=performance.now(); callStart=t0+DELAY[4]; };
+  window.hxReset=function(){ t0=1e12; callStart=t0; };
+  document.getElementById('hxPhoto').addEventListener('click',window.hxRestart);
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function start(){
+    if(reduce){ t0=performance.now()-10000; paintSource(performance.now()); warp(); return; }
+    requestAnimationFrame(frame);
+  }
+  if(document.fonts&&document.fonts.load){ Promise.all([document.fonts.load('700 36px Sora'),document.fonts.load('600 30px Manrope'),document.fonts.load('700 30px Manrope')]).then(start,start); } else start();
+})();
+</script>
 
 </body></html>
