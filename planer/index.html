@@ -276,6 +276,18 @@ main{padding-block:18px 40px}
 .micbtn.on .dot{animation:micp 1s ease-in-out infinite}
 @keyframes micp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
 .interim{min-height:20px;font-size:14px;color:var(--muted);font-style:italic;margin:-4px 0 8px}
+.rep{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg)}
+.rep>label.chk{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+.rep-body{display:none;margin-top:10px;gap:10px;flex-direction:column}
+.rep.on .rep-body{display:flex}
+.rep-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.rep-days button{border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 0;font-weight:700;font-size:13px;cursor:pointer}
+.rep-days button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.rep-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rep-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted)}
+.rep-row select,.rep-row input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;font:inherit;color:var(--fg);min-width:0}
+.rep-sum{font-size:13px;color:var(--accent);font-weight:600}
+@media (max-width:520px){.rep-row{grid-template-columns:1fr 1fr}.rep-row label:first-child{grid-column:1/-1}}
 .fromvoice{background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:12px}
 
 /* Modal */
@@ -370,6 +382,12 @@ function fmtDue(s){if(!s)return"";const d=parse(s);return d.getDate()+" "+MONTHS
 function progress(t){const st=t.steps||[];if(t.status==="done")return 100;if(!st.length)return 0;return Math.round(100*st.filter(x=>x.done).length/st.length)}
 function visible(){return tasks.filter(t=>!filter.size||filter.has(t.area))}
 const isEvent=t=>t.kind==="event";
+const REP_DOW=[[1,"Pn","poniedziałek"],[2,"Wt","wtorek"],[3,"Śr","środa"],[4,"Cz","czwartek"],[5,"Pt","piątek"],[6,"So","sobota"],[0,"Nd","niedziela"]];
+const isRepeat=t=>!!(t.repeat&&Array.isArray(t.repeat.days)&&t.repeat.days.length);
+function repText(r){const d=REP_DOW.filter(x=>r.days.includes(x[0]));const all=d.length===7,wd=d.length===5&&!r.days.includes(0)&&!r.days.includes(6);
+  return "Co tydzień: "+(all?"codziennie":wd?"od poniedziałku do piątku":d.map(x=>x[2]).join(", "))+", godz. "+r.time}
+function occursOn(t,k){if(!isRepeat(t))return t.due===k;const r=t.repeat;if(r.from&&k<r.from)return false;if(r.until&&k>r.until)return false;return r.days.includes(parse(k).getDay())}
+function onDay(t,k){return isRepeat(t)?{...t,due:k,time:t.repeat.time,_occ:true}:t}
 const isParked=t=>!!t.parked;
 let showParked=false;
 
@@ -587,7 +605,7 @@ async function moveTask(t,ns){
 
 /* ---------- calendar ---------- */
 function renderDay(el){
-  const k=dayView,d=parse(k),v=visible().filter(t=>t.due===k&&!isParked(t)).sort(sortTasks);
+  const k=dayView,d=parse(k),v=visible().filter(t=>occursOn(t,k)&&!isParked(t)).map(t=>onDay(t,k)).sort(sortTasks);
   const timed=v.filter(t=>t.time),untimed=v.filter(t=>!t.time);
   const H=SLOTS.length*SLOT_PX;
   // lay out overlapping blocks in columns
@@ -598,7 +616,7 @@ function renderDay(el){
   const start=DAY_START*60,end=DAY_END*60;
   const blocks=items.map(it=>{const s=Math.max(it.s,start),e=Math.min(Math.max(it.e,s+15),end);if(e<=start||s>=end)return"";
     const top=(s-start)/30*SLOT_PX,h=Math.max(22,(e-s)/30*SLOT_PX-2);const w=100/it.n;
-    return `<button class="blk ${it.t.status==="done"?"done":""} ${h<44?"short":""}" data-open="${esc(it.t.id)}" style="--c:${areaColor(it.t.area)};top:${top+1}px;height:${h}px;left:calc(58px + (100% - 64px) * ${it.col*w/100} + 3px);width:calc((100% - 64px) * ${w/100} - 3px)" title="${esc(it.t.title)}"><b>${esc(it.t.title)}</b><small>${it.t.time}–${fromMin(it.e)}</small></button>`}).join("");
+    return `<button class="blk ${it.t.status==="done"?"done":""} ${h<44?"short":""}" data-open="${esc(it.t.id)}" style="--c:${areaColor(it.t.area)};top:${top+1}px;height:${h}px;left:calc(58px + (100% - 64px) * ${it.col*w/100} + 3px);width:calc((100% - 64px) * ${w/100} - 3px)" title="${esc(it.t.title)}"><b>${it.t._occ?"🔁 ":""}${esc(it.t.title)}</b><small>${it.t.time}–${fromMin(it.e)}</small></button>`}).join("");
   const outside=items.filter(it=>it.e<=start||it.s>=end).map(it=>it.t);
   let rows="";SLOTS.forEach((s,i)=>{const half=s.endsWith(":30");rows+=`<div class="t ${half?"half":""}">${half?"":s}</div><div class="s ${half?"half":""}" data-slot="${s}" data-time="${s}"></div>`});
   let now="";if(k===todayISO()){const n=new Date(),m=n.getHours()*60+n.getMinutes();if(m>=start&&m<end)now=`<div class="now" style="top:${(m-start)/30*SLOT_PX}px"></div>`}
@@ -619,11 +637,13 @@ function renderCal(el){
     const t0=todayISO(),ym=t0.slice(0,7);const up=visible().filter(t=>t.due&&t.status!=="done"&&t.due>=t0).map(t=>t.due).sort();
     if(up.length&&!up.some(x=>x.startsWith(ym))){const n=parse(up[0]);calMonth=new Date(n.getFullYear(),n.getMonth(),1)}}
   const y=calMonth.getFullYear(),m=calMonth.getMonth();const first=new Date(y,m,1);const start=new Date(y,m,1-((first.getDay()+6)%7));
-  const v=visible().filter(t=>!isParked(t));const byDay={};v.forEach(t=>{if(t.due)(byDay[t.due]=byDay[t.due]||[]).push(t)});
-  const noDate=v.filter(t=>!t.due&&t.status!=="done");
+  const v=visible().filter(t=>!isParked(t));const byDay={};
+  v.forEach(t=>{if(isRepeat(t)){for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=iso(d);if(occursOn(t,k))(byDay[k]=byDay[k]||[]).push(onDay(t,k))}}
+    else if(t.due)(byDay[t.due]=byDay[t.due]||[]).push(t)});
+  const noDate=v.filter(t=>!t.due&&!isRepeat(t)&&t.status!=="done");
   const nowD=new Date(),wkStart=new Date(nowD.getFullYear(),nowD.getMonth(),nowD.getDate()-((nowD.getDay()+6)%7)),wkEnd=new Date(wkStart);wkEnd.setDate(wkStart.getDate()+6);
   const wkS=iso(wkStart),wkE=iso(wkEnd),nowH=nowD.getHours();
-  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title)}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${esc(t.title)}</span></button>`;
+  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&!t._occ&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title+(t._occ?" (cykliczne)":""))}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${t._occ?"🔁 ":""}${esc(t.title)}</span></button>`;
   const HOURS=Array.from({length:13},(_,i)=>8+i);
   const isAllDay=t=>{const h=t.time?parseInt(t.time,10):null;return h===null||h<8||h>20};
   let wkMax=0;const hMax={};for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);const L=byDay[iso(d)]||[];wkMax=Math.max(wkMax,L.filter(isAllDay).length);
@@ -721,6 +741,18 @@ function openEditor(t,preset,mode){
       <label class="f">Poziom zaawansowania<select id="f-level">${opts(LEVELS,e.level)}</select></label>
       <label class="f">Osoby do zaangażowania<input id="f-people" value="${esc(e.people)}"></label>
       <label class="full" style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="f-event" ${isEvent(e)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> Tylko w kalendarzu (nie pokazuj na tablicy zadań)</label>
+      <div class="rep full ${e.repeat?"on":""}" id="repBox">
+        <label class="chk"><input type="checkbox" id="f-rep" ${e.repeat?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> 🔁 Wydarzenie cykliczne (powtarza się co tydzień)</label>
+        <div class="rep-body">
+          <div class="rep-days" id="repDays" role="group" aria-label="Dni tygodnia">${REP_DOW.map(([n,l,full])=>`<button type="button" data-dow="${n}" aria-pressed="${!!(e.repeat&&e.repeat.days.includes(n))}" title="${full}">${l}</button>`).join("")}</div>
+          <div class="rep-row">
+            <label>Godzina<select id="f-reptime">${SLOTS.map(x=>`<option value="${x}" ${x===((e.repeat&&e.repeat.time)||e.time||"08:00")?"selected":""}>${x}</option>`).join("")}</select></label>
+            <label>Od dnia<input type="date" id="f-repfrom" value="${esc((e.repeat&&e.repeat.from)||e.due||todayISO())}"></label>
+            <label>Do dnia (opcjonalnie)<input type="date" id="f-repuntil" value="${esc((e.repeat&&e.repeat.until)||"")}"></label>
+          </div>
+          <div class="rep-sum" id="repSum"></div>
+        </div>
+      </div>
       <label class="full" style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="f-parked" ${isParked(e)?"checked":""} style="width:18px;height:18px;accent-color:var(--accent)"> Odłożone (ukryj z tablicy, kalendarza i statystyk)</label>
       <div class="f full"><label class="f" style="margin-bottom:4px">Dodatkowe czynności (kroki do odhaczenia)</label>
         <div class="steps" id="steps"></div>
@@ -748,6 +780,10 @@ function openEditor(t,preset,mode){
   $("#cancelBtn").onclick=closeModal;$("#saveBtn").onclick=save;
   $("#addStep").onclick=addStep;$("#f-newstep").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();addStep()}});
   $("#form").addEventListener("submit",ev=>{ev.preventDefault();save()});
+  const repSum=()=>{const d=[...document.querySelectorAll("#repDays [aria-pressed=true]")].map(b=>+b.dataset.dow);$("#repSum").textContent=d.length?repText({days:d,time:$("#f-reptime").value}):"Zaznacz co najmniej jeden dzień."};
+  $("#f-rep").onchange=()=>{$("#repBox").classList.toggle("on",$("#f-rep").checked);if($("#f-rep").checked){$("#f-event").checked=true;repSum()}};
+  $("#repDays").onclick=ev=>{const b=ev.target.closest("button");if(!b)return;b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")!=="true");repSum()};
+  $("#f-reptime").onchange=repSum;if(e.repeat)repSum();
   if(!isNew)$("#delBtn").onclick=()=>{$("#mfoot").innerHTML=`<span class="confirm">Na pewno usunąć to zadanie?</span><span class="sp"></span><button class="btn" id="noDel" type="button">Nie</button><button class="btn danger" id="yesDel" type="button">Tak, usuń</button>`;
     $("#noDel").onclick=()=>openEditor(t);$("#yesDel").onclick=()=>del(t)};
   setTimeout(()=>{if(isNew)$("#f-title").focus()},30);
@@ -875,13 +911,17 @@ async function save(){
   // keep "Poziom zaawansowania: Zakończone" and "Status: Zrobione" in sync
   if(body.level==="Zakończone"&&body.status!=="done"&&(editing.level!=="Zakończone"||editing.status===body.status))body.status="done";
   else if(body.status!=="done"&&body.level==="Zakończone"&&editing.status==="done")body.level="Zaawansowane";
+  if($("#f-rep").checked){const days=[...document.querySelectorAll("#repDays [aria-pressed=true]")].map(b=>+b.dataset.dow);
+    if(!days.length){$("#repSum").textContent="Zaznacz co najmniej jeden dzień tygodnia.";$("#repDays").scrollIntoView({block:"center"});return}
+    const from=g("f-repfrom")||todayISO(),until=g("f-repuntil");if(until&&until<from){$("#repSum").textContent="Data „do” musi być po dacie „od”.";return}
+    body.repeat={days:days.sort((a,b)=>((a+6)%7)-((b+6)%7)),time:g("f-reptime"),from,until:until||""};body.kind="event";body.due=from;body.time=body.repeat.time}
   if(body.status==="done"&&!body.doneAt){body.doneAt=new Date().toISOString();body.level="Zakończone"}
   if(body.status!=="done")body.doneAt=null;
   const id=editing.id||("t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   const existed=!!editing.id;
   const i=tasks.findIndex(t=>t.id===id);const local={id,...body};if(i>=0)tasks[i]=local;else tasks.push(local);
   closeModal();render();
-  try{await db.doc("tasks/"+id).set(body);toast(existed?"Zapisano":"Dodano zadanie")}catch(err){toast(err?.code==="quota_exceeded"?"Brak miejsca na nowe zadania":"Nie udało się zapisać")}
+  try{await db.doc("tasks/"+id).set(body);toast(existed?"Zapisano":body.repeat?"Dodano wydarzenie cykliczne":"Dodano zadanie")}catch(err){toast(err?.code==="quota_exceeded"?"Brak miejsca na nowe zadania":"Nie udało się zapisać")}
 }
 async function del(t){closeModal();tasks=tasks.filter(x=>x.id!==t.id);render();
   try{await db.doc("tasks/"+t.id).delete();toast("Usunięto")}catch(e){toast("Nie udało się usunąć")}}
