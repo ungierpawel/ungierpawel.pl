@@ -784,7 +784,7 @@ async function save(){
   const prev=editing.status;
   const body={title,area:g("f-area"),status:g("f-status"),due:g("f-due"),time:g("f-due")?g("f-time"):"",duration:+g("f-duration")||30,kind:$("#f-event").checked?"event":"task",parked:$("#f-parked").checked,priority:g("f-priority"),level:g("f-level"),people:g("f-people"),
     steps:editing.steps.filter(s=>s.t.trim()).map(s=>({t:s.t.trim(),done:!!s.done})),next:g("f-next"),notes:g("f-notes"),link:g("f-link"),linkLabel:g("f-link")===(editing.link||"")?(editing.linkLabel||""):"",
-    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null};
+    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null,...(editing.file?{file:editing.file}:{})};
   // keep "Poziom zaawansowania: Zakończone" and "Status: Zrobione" in sync
   if(body.level==="Zakończone"&&body.status!=="done"&&(editing.level!=="Zakończone"||editing.status===body.status))body.status="done";
   else if(body.status!=="done"&&body.level==="Zakończone"&&editing.status==="done")body.level="Zaawansowane";
