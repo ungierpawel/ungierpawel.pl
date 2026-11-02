@@ -760,7 +760,7 @@ async function voiceCreate(preset){
 const fileCache={};
 async function viewFile(f){
   let v=fileCache[f.doc];
-  if(!v){try{const s=await db.doc("files/"+f.doc).get();v=s.exists&&s.data().view;if(v)fileCache[f.doc]=v}catch(e){}}
+  if(!v){try{const s=await db.doc("files/"+f.doc).get();v=s.exists&&s.data().view;if(typeof v==="string")v=JSON.parse(v);if(v)fileCache[f.doc]=v}catch(e){}}
   if(!v){toast("Nie mogę wczytać ściągi");return}
   const root=document.createElement("div");root.className="sheet";root.setAttribute("role","dialog");root.setAttribute("aria-modal","true");
   root.innerHTML=`<div class="sheet-in"><div class="sheet-bar"><h2>${esc(v.title)}</h2><button class="btn" id="shDl" type="button">Pobierz plik Excel</button><button class="btn primary" id="shClose" type="button">Zamknij ✕</button></div>
