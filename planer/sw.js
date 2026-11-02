@@ -1,5 +1,5 @@
 // Mój Planer – offline cache of the app shell (data offline is handled by Firestore)
-const CACHE="planer-v7";
+const CACHE="planer-v8";
 const SHELL=["./","index.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png",
  "https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
  "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js",

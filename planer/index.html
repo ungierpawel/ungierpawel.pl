@@ -22,7 +22,7 @@
   --fg:#18202E; --muted:#5B6678; --faint:#8A94A6;
   --accent:#2D5BD8; --accent-ink:#FFFFFF; --accent-soft:#DCE5FB;
   --danger:#C23B3B; --danger-soft:#FBE3E3; --ok:#2E8B57; --ok-soft:#DDF2E5; --warn:#B7791F; --warn-soft:#FBEFD9;
-  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280;
+  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280; --a-outlook:#0F7C8C;
   --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.06);
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
@@ -33,14 +33,14 @@
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#10141C; --surface:#1A202B; --sunk:#141922; --line:#2A3241;
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
@@ -106,6 +106,9 @@ main{padding-block:18px 40px}
 .cal-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .cal-head h2{font-family:var(--f-display);font-size:22px;margin:0 auto 0 0;text-transform:capitalize}
 .cal-scroll{overflow-x:auto}
+.btn.gc{border-color:color-mix(in srgb,var(--a-outlook) 50%,var(--line));color:var(--a-outlook);font-weight:700}
+.btn.gc.warn{border-color:var(--danger);color:var(--danger)}
+#gcMsg{font-size:12px;color:var(--danger);margin:-6px 0 8px}
 .cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:320px}
 .cal .dow{background:var(--sunk);padding:7px 8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .day{background:var(--surface);min-height:108px;padding:6px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
@@ -372,7 +375,7 @@ const DURS=[15,30,45,60,90,120,180];
 const durTxt=d=>d<60?d+" min":(d%60?Math.floor(d/60)+" godz. "+d%60+" min":d/60+(d===60?" godzina":" godz."));
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const areaColor=a=>(AREAS.find(x=>x.k===a)||AREAS[AREAS.length-1]).c;
+const areaColor=a=>a==="Outlook"?"var(--a-outlook)":(AREAS.find(x=>x.k===a)||AREAS[AREAS.length-1]).c;
 const pad=n=>String(n).padStart(2,"0");
 const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const todayISO=()=>iso(new Date());
@@ -605,7 +608,7 @@ async function moveTask(t,ns){
 
 /* ---------- calendar ---------- */
 function renderDay(el){
-  const k=dayView,d=parse(k),v=visible().filter(t=>occursOn(t,k)&&!isParked(t)).map(t=>onDay(t,k)).sort(sortTasks);
+  const k=dayView,d=parse(k),v=visible().filter(t=>occursOn(t,k)&&!isParked(t)).map(t=>onDay(t,k)).concat(filter.size?[]:gcOnDay(k)).sort(sortTasks);
   const timed=v.filter(t=>t.time),untimed=v.filter(t=>!t.time);
   const H=SLOTS.length*SLOT_PX;
   // lay out overlapping blocks in columns
@@ -640,10 +643,11 @@ function renderCal(el){
   const v=visible().filter(t=>!isParked(t));const byDay={};
   v.forEach(t=>{if(isRepeat(t)){for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=iso(d);if(occursOn(t,k))(byDay[k]=byDay[k]||[]).push(onDay(t,k))}}
     else if(t.due)(byDay[t.due]=byDay[t.due]||[]).push(t)});
+  if(!filter.size)for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=iso(d);const g=gcOnDay(k);if(g.length)(byDay[k]=byDay[k]||[]).push(...g)}
   const noDate=v.filter(t=>!t.due&&!isRepeat(t)&&t.status!=="done");
   const nowD=new Date(),wkStart=new Date(nowD.getFullYear(),nowD.getMonth(),nowD.getDate()-((nowD.getDay()+6)%7)),wkEnd=new Date(wkStart);wkEnd.setDate(wkStart.getDate()+6);
   const wkS=iso(wkStart),wkE=iso(wkEnd),nowH=nowD.getHours();
-  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&!t._occ&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title+(t._occ?" (cykliczne)":""))}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${t._occ?"🔁 ":""}${esc(t.title)}</span></button>`;
+  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&!t._occ&&!t._g&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title+(t._occ?" (cykliczne)":""))}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${t._occ?"🔁 ":""}${t._g?"📅 ":""}${esc(t.title)}</span></button>`;
   const HOURS=Array.from({length:13},(_,i)=>8+i);
   const isAllDay=t=>{const h=t.time?parseInt(t.time,10):null;return h===null||h<8||h>20};
   let wkMax=0;const hMax={};for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);const L=byDay[iso(d)]||[];wkMax=Math.max(wkMax,L.filter(isAllDay).length);
@@ -660,19 +664,114 @@ function renderCal(el){
       continue}
     cells+=`<div class="${cls}" data-day="${k}"><span class="num">${d.getDate()}</span><div class="evs">${list.map(t=>evBtn(t,k)).join("")}</div></div>`}
   el.innerHTML=`<div class="cal-head"><h2>${MONTHS[m]} ${y}</h2>
-    <button class="btn" id="calPrev" aria-label="Poprzedni miesiąc">‹</button><button class="btn" id="calToday">Dziś</button><button class="btn" id="calNext" aria-label="Następny miesiąc">›</button></div>
-    <div class="cal-scroll"><div class="cal">${DOW.map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div></div>
-    <div class="legend">${AREAS.map(a=>`<span><span class="dot" style="--c:${a.c}"></span>${esc(a.k)}</span>`).join("")}<span>Czerwona ramka = zaległe</span></div>
+    <button class="btn gc" id="gcBtn" type="button"></button><button class="btn" id="calPrev" aria-label="Poprzedni miesiąc">‹</button><button class="btn" id="calToday">Dziś</button><button class="btn" id="calNext" aria-label="Następny miesiąc">›</button></div>
+    <div id="gcMsg"></div><div class="cal-scroll"><div class="cal">${DOW.map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div></div>
+    <div class="legend">${AREAS.map(a=>`<span><span class="dot" style="--c:${a.c}"></span>${esc(a.k)}</span>`).join("")}<span><span class="dot" style="--c:var(--a-outlook)"></span>📅 Outlook</span><span>Czerwona ramka = zaległe</span></div>
     <p class="note">${hasWk?"Bieżący tydzień ma godziny 8:00–20:00 – kliknij wolną godzinę, żeby dodać tam zadanie. ":""}Kliknij numer dnia, żeby zobaczyć jego rozkład co pół godziny.</p>
     ${noDate.length?`<div class="panel" style="margin-top:12px"><h3>Bez terminu (${noDate.length})</h3><div class="list">${noDate.map(liHTML).join("")}</div></div>`:""}`;
   $("#calPrev").onclick=()=>{calMonth=new Date(y,m-1,1);render()};$("#calNext").onclick=()=>{calMonth=new Date(y,m+1,1);render()};
   $("#calToday").onclick=()=>{calMonth=null;render()};
+  $("#gcBtn").onclick=gcClick;gcBadge();
 }
 document.addEventListener("click",e=>{
-  const o=e.target.closest("[data-open]");if(o){const t=tasks.find(x=>x.id===o.dataset.open);if(t)openEditor(t);return}
+  const o=e.target.closest("[data-open]");if(o){if(o.dataset.open.startsWith("g:")){gcShow(o.dataset.open);return}const t=tasks.find(x=>x.id===o.dataset.open);if(t)openEditor(t);return}
   const hs=e.target.closest("[data-hslot]");if(hs&&view==="cal"){openEditor(null,{due:hs.dataset.hday,time:hs.dataset.hslot,duration:60});return}
   const d=e.target.closest(".day");if(d&&view==="cal"){dayView=d.dataset.day;render();window.scrollTo({top:0})}
 });
+/* ---------- Google Calendar sync (the calendar Outlook shows for the Gmail account) ----------
+   Planner → Google: tasks/events that have a date and an hour (and weekly recurring events).
+   Google → planner: other calendar entries are shown read-only in the calendar;
+   moving or renaming a planner entry in Outlook/Google updates the task here. */
+const GC_CLIENT="756996557912-efl0iplsbqcp30vjnj8bhsajv1652odk.apps.googleusercontent.com";
+const GC_SCOPE="https://www.googleapis.com/auth/calendar.events";
+const GC_API="https://www.googleapis.com/calendar/v3/calendars/primary/events";
+const GC_TZ="Europe/Warsaw";
+let gcTok=null,gcExp=0,gcTC=null,gcBusy=false,gcTimer=null,gcLast=null,gcErr="",gcEvents=[];
+try{const s=JSON.parse(sessionStorage.getItem("gc-tok")||"null");if(s&&s.exp>Date.now()+60000){gcTok=s.t;gcExp=s.exp}}catch(e){}
+try{gcEvents=JSON.parse(localStorage.getItem("gc-events")||"[]");gcLast=localStorage.getItem("gc-last")}catch(e){}
+const gcOn=()=>!!gcTok&&gcExp>Date.now()+30000;
+function gcLoadLib(){return window.google?.accounts?.oauth2?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=ok;s.onerror=()=>no(new Error("lib"));document.head.appendChild(s)})}
+async function gcConnect(){
+  try{await gcLoadLib()}catch(e){toast("Nie mogę połączyć się z Google. Sprawdź internet.");return}
+  if(!gcTC)gcTC=google.accounts.oauth2.initTokenClient({client_id:GC_CLIENT,scope:GC_SCOPE,login_hint:firebase.auth().currentUser?.email||"",
+    callback:r=>{if(r.error){gcErr="Nie udzielono dostępu do kalendarza.";gcBadge();return}
+      gcTok=r.access_token;gcExp=Date.now()+(+r.expires_in||3600)*1000;try{sessionStorage.setItem("gc-tok",JSON.stringify({t:gcTok,exp:gcExp}))}catch(e){}
+      try{localStorage.setItem("gc-linked","1")}catch(e){}gcErr="";gcSync()},
+    error_callback:e=>{gcErr=e.type==="popup_closed"?"Zamknięto okno logowania Google.":"Okno Google zostało zablokowane – spróbuj jeszcze raz.";gcBadge()}});
+  gcTC.requestAccessToken({prompt:localStorage.getItem("gc-linked")?"":"consent"});
+}
+async function gcFetch(url,opt={}){
+  const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+gcTok,"Content-Type":"application/json",...(opt.headers||{})}});
+  if(r.status===401){gcTok=null;try{sessionStorage.removeItem("gc-tok")}catch(e){}throw new Error("auth")}
+  if(!r.ok&&r.status!==410&&r.status!==404)throw new Error("http "+r.status+" "+(await r.text()).slice(0,200));
+  return r.status===204||r.status===410||r.status===404?null:r.json();
+}
+const gcDOW=["SU","MO","TU","WE","TH","FR","SA"];
+const gcAddMin=(d,t,m)=>{const x=new Date(d+"T"+t+":00");x.setMinutes(x.getMinutes()+m);return iso(x)+"T"+pad2(x.getHours())+":"+pad2(x.getMinutes())+":00"};
+const gcWanted=t=>!isParked(t)&&(isRepeat(t)||(t.due&&t.time));
+function gcSig(o){return [o.title||"",o.due||"",o.time||"",+o.duration||30,o.done?1:0,o.rrule||""].join("|")}
+function gcTaskSig(t){const r=isRepeat(t)?t.repeat:null;return gcSig({title:t.title,due:r?r.from:t.due,time:r?r.time:t.time,duration:t.duration,done:t.status==="done",rrule:r?gcRule(r):""})}
+function gcRule(r){return "RRULE:FREQ=WEEKLY;BYDAY="+r.days.map(d=>gcDOW[d]).join(",")+(r.until?";UNTIL="+r.until.replace(/-/g,"")+"T225959Z":"")}
+function gcEvSig(ev){const s=(ev.start&&ev.start.dateTime)||"",e=(ev.end&&ev.end.dateTime)||"";if(!s)return null;
+  const dur=Math.round((new Date(e)-new Date(s))/60000);const done=/^✓ /.test(ev.summary||"");
+  return gcSig({title:(ev.summary||"").replace(/^✓ /,"").replace(/^🔁 /,""),due:s.slice(0,10),time:s.slice(11,16),duration:dur,done,rrule:(ev.recurrence||[]).find(x=>x.startsWith("RRULE"))||""})}
+function gcBody(t){const r=isRepeat(t)?t.repeat:null,due=r?r.from:t.due,time=r?r.time:t.time,dur=+t.duration||30;
+  const sig=gcTaskSig(t);
+  const b={summary:(t.status==="done"?"✓ ":"")+t.title,
+    description:[t.next?"Następny krok: "+t.next:"",t.notes||"","— z Mojego Planera (ungierpawel.pl/planer), obszar: "+(t.area||"")].filter(Boolean).join("\n\n"),
+    start:{dateTime:due+"T"+time+":00",timeZone:GC_TZ},end:{dateTime:gcAddMin(due,time,dur),timeZone:GC_TZ},
+    extendedProperties:{private:{planer:"1",planerId:t.id,planerSig:sig}},reminders:{useDefault:true}};
+  if(r)b.recurrence=[gcRule(r)];else b.recurrence=[];
+  return b}
+async function gcSync(){
+  if(!gcOn()){gcBadge();return}
+  if(gcBusy)return;gcBusy=true;gcBadge();
+  try{
+    // 1) planner-owned events (all, masters)
+    const own={};let pt="";
+    do{const j=await gcFetch(GC_API+"?privateExtendedProperty=planer%3D1&maxResults=2500&timeZone="+encodeURIComponent(GC_TZ)+(pt?"&pageToken="+pt:""));(j.items||[]).forEach(ev=>{const id=ev.extendedProperties?.private?.planerId;if(id)own[id]=ev});pt=j.nextPageToken||""}while(pt);
+    let pushed=0,pulled=0,removed=0;
+    for(const t of tasks){
+      const ev=own[t.id];delete own[t.id];
+      if(!gcWanted(t)){if(ev){await gcFetch(GC_API+"/"+ev.id,{method:"DELETE"});removed++}continue}
+      const tSig=gcTaskSig(t);
+      if(!ev){const j=await gcFetch(GC_API,{method:"POST",body:JSON.stringify(gcBody(t))});pushed++;continue}
+      const stored=ev.extendedProperties.private.planerSig||"",gSig=gcEvSig(ev);
+      if(gSig&&gSig!==stored&&!isRepeat(t)){ // changed in Outlook/Google → update the planner
+        const s=ev.start.dateTime,e=ev.end.dateTime,dur=Math.round((new Date(e)-new Date(s))/60000);
+        const patch={title:(ev.summary||t.title).replace(/^✓ /,""),due:s.slice(0,10),time:s.slice(11,16),duration:DURS.includes(dur)?dur:(+t.duration||30)};
+        await db.doc("tasks/"+t.id).update(patch);Object.assign(t,patch);
+        await gcFetch(GC_API+"/"+ev.id,{method:"PATCH",body:JSON.stringify({extendedProperties:{private:{planer:"1",planerId:t.id,planerSig:gcTaskSig(t)}}})});pulled++;continue}
+      if(tSig!==stored){await gcFetch(GC_API+"/"+ev.id,{method:"PUT",body:JSON.stringify(gcBody(t))});pushed++}
+    }
+    for(const ev of Object.values(own)){await gcFetch(GC_API+"/"+ev.id,{method:"DELETE"});removed++}
+    // 2) other calendar entries (from Outlook/Google) to show in the planner
+    const from=new Date();from.setDate(from.getDate()-35);const to=new Date();to.setDate(to.getDate()+120);
+    const list=[];pt="";
+    do{const j=await gcFetch(GC_API+"?singleEvents=true&orderBy=startTime&maxResults=2500&timeZone="+encodeURIComponent(GC_TZ)+"&timeMin="+encodeURIComponent(from.toISOString())+"&timeMax="+encodeURIComponent(to.toISOString())+(pt?"&pageToken="+pt:""));
+      (j.items||[]).forEach(ev=>{if(ev.status==="cancelled"||ev.extendedProperties?.private?.planer)return;
+        const allDay=!!ev.start.date;const s=ev.start.dateTime||ev.start.date,e=ev.end.dateTime||ev.end.date;
+        list.push({id:ev.id,title:ev.summary||"(bez tytułu)",start:s.slice(0,10),end:allDay?e.slice(0,10):s.slice(0,10),time:allDay?"":s.slice(11,16),
+          duration:allDay?0:Math.max(15,Math.round((new Date(e)-new Date(s))/60000)),allDay,where:ev.location||"",link:ev.htmlLink||""})});pt=j.nextPageToken||""}while(pt);
+    gcEvents=list;gcLast=new Date().toISOString();gcErr="";
+    try{localStorage.setItem("gc-events",JSON.stringify(list));localStorage.setItem("gc-last",gcLast)}catch(e){}
+    if(pushed||pulled||removed)toast(`Kalendarz: wysłano ${pushed}, pobrano zmian ${pulled}, usunięto ${removed}`);
+  }catch(e){gcErr=e.message==="auth"?"Połączenie z kalendarzem wygasło – kliknij, żeby odnowić.":"Błąd synchronizacji kalendarza. Spróbuję ponownie.";console.warn("gcal",e)}
+  finally{gcBusy=false;gcBadge();if(view==="cal")render()}
+}
+function gcSchedule(ms=4000){clearTimeout(gcTimer);if(gcOn())gcTimer=setTimeout(gcSync,ms)}
+setInterval(()=>{if(gcOn()&&!gcBusy&&document.visibilityState==="visible")gcSync()},5*60000);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")gcSchedule(1500)});
+function gcBadge(){const b=document.getElementById("gcBtn");if(!b)return;
+  const t=gcBusy?"🔄 Synchronizuję…":gcOn()?"🔄 Outlook: "+(gcLast?new Date(gcLast).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"}):"połączony"):"📅 Połącz z Outlookiem";
+  b.textContent=t;b.title=gcErr||(gcOn()?"Kalendarz Google/Outlook jest połączony. Kliknij, żeby zsynchronizować teraz.":"Kliknij, żeby połączyć planer z kalendarzem Google, który widzisz w Outlooku.");
+  b.classList.toggle("warn",!!gcErr);const m=document.getElementById("gcMsg");if(m)m.textContent=gcErr}
+function gcClick(){if(gcOn())gcSync();else gcConnect()}
+/* external entries for a given day */
+function gcOnDay(k){return gcEvents.filter(e=>e.allDay?(k>=e.start&&k<e.end):e.start===k).map(e=>({id:"g:"+e.id,title:e.title,due:k,time:e.time,duration:e.duration,area:"Outlook",status:"todo",_g:e}))}
+function gcShow(id){const e=gcEvents.find(x=>"g:"+x.id===id);if(!e)return;
+  toast("📅 "+e.title+(e.time?" – "+fmtDue(e.start)+", "+e.time:" – "+fmtDue(e.start))+(e.where?" ("+e.where+")":"")+". Wpis z kalendarza Outlook – zmieniaj go w Outlooku.")}
+
 function liHTML(t){const n=t.due?daysTo(t.due):null;
   return `<button class="li" data-open="${esc(t.id)}"><span class="dot" style="--c:${areaColor(t.area)}"></span><span class="t">${esc(t.title)}</span>${t.due?`<span class="due ${n<0?"late":n<=2?"soon":""}">${n<0?Math.abs(n)+" dni po terminie":n===0?"dziś":n===1?"jutro":fmtDue(t.due)}</span>`:""}</button>`}
 
@@ -957,6 +1056,7 @@ window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["bo
     tasks=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(!snap.metadata.fromCache||tasks.length){loaded=true;clearTimeout(timer);if(!snap.metadata.fromCache&&$("#status").textContent.startsWith("Brak"))$("#status").textContent=""}
     if(!drag?.started){renderFilters();render()}
+    gcSchedule();
     if(loaded&&!tasks.length)$("#view").innerHTML=`<div class="empty">Nie masz jeszcze żadnych zadań. Kliknij <b>+ Nowe zadanie</b>, żeby dodać pierwsze.</div>`;
   },err=>{loaded=true;clearTimeout(timer);$("#status").textContent=err.code==="permission-denied"?"Brak dostępu do danych tego konta.":"Nie udało się wczytać zadań. Odśwież za chwilę.";render()});
   const dailyBusy=()=>!!document.activeElement?.closest?.("#daily");
