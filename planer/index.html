@@ -119,6 +119,29 @@ main{padding-block:18px 40px}
 @media (max-width:600px){.day{min-height:72px;padding:3px}.ev{padding:2px 3px}.ev span{display:none}.ev{width:auto;display:inline-flex}.day .evs{display:flex;flex-wrap:wrap;gap:3px}}
 .ev .tm{font-variant-numeric:tabular-nums;font-weight:700;color:var(--muted);flex:none}
 @media (max-width:600px){.ev .tm{display:none}}
+/* Current week: each day expanded with hourly rows 8:00–20:00 */
+.day.wk{min-height:0;cursor:default;padding:6px 0 0}
+.day.wk>.num,.day.wk>.evs{margin:0 6px;cursor:pointer}
+.day.wk>.evs{gap:3px;display:flex;flex-direction:column;height:calc(var(--n,0)*24px + 4px);overflow:hidden}
+.hrs{margin-top:4px;border-top:1px solid var(--line)}
+.hr{display:flex;align-items:stretch;gap:4px;height:calc(var(--n,1)*24px + 6px);overflow:hidden;box-sizing:border-box;border-top:1px dashed color-mix(in srgb,var(--line) 70%,transparent);cursor:pointer;padding:2px 4px 2px 0}
+.hr:first-child{border-top:0}
+.hr:hover{background:var(--accent-soft)}
+.hr .hl{flex:none;width:36px;text-align:right;font-size:11px;font-weight:600;color:var(--faint);font-variant-numeric:tabular-nums;padding-top:2px}
+.hr .hev{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hr.now{background:color-mix(in srgb,var(--accent) 10%,var(--surface))}
+.hr.now .hl{color:var(--accent);font-weight:800}
+.day.wk.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.wk-note{font-size:12px;color:var(--muted);margin:0 0 8px}
+@media (max-width:600px){
+  .day.wk{padding-top:3px}.day.wk>.num,.day.wk>.evs{margin:0 2px}
+  .hr{flex-direction:column;gap:1px;height:calc(var(--n,1)*28px + 14px);padding:1px 2px}
+  .day.wk>.evs{height:calc(var(--n,0)*28px + 4px)}
+  .hr .hl{width:auto;text-align:left;font-size:9px;padding:0}
+  .day.wk .ev{display:block;width:100%;padding:1px 3px}
+  .day.wk .ev .dot,.day.wk .ev .tm{display:none}
+  .day.wk .ev span:last-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;font-size:10px;line-height:1.2;word-break:break-word}
+}
 /* Day view */
 .dv-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .dv-head h2{font-family:var(--f-display);font-size:22px;margin:0 auto 0 0}
@@ -598,21 +621,36 @@ function renderCal(el){
   const y=calMonth.getFullYear(),m=calMonth.getMonth();const first=new Date(y,m,1);const start=new Date(y,m,1-((first.getDay()+6)%7));
   const v=visible().filter(t=>!isParked(t));const byDay={};v.forEach(t=>{if(t.due)(byDay[t.due]=byDay[t.due]||[]).push(t)});
   const noDate=v.filter(t=>!t.due&&t.status!=="done");
-  let cells="";for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=iso(d);const list=(byDay[k]||[]).sort(sortTasks);
+  const nowD=new Date(),wkStart=new Date(nowD.getFullYear(),nowD.getMonth(),nowD.getDate()-((nowD.getDay()+6)%7)),wkEnd=new Date(wkStart);wkEnd.setDate(wkStart.getDate()+6);
+  const wkS=iso(wkStart),wkE=iso(wkEnd),nowH=nowD.getHours();
+  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title)}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${esc(t.title)}</span></button>`;
+  const HOURS=Array.from({length:13},(_,i)=>8+i);
+  const isAllDay=t=>{const h=t.time?parseInt(t.time,10):null;return h===null||h<8||h>20};
+  let wkMax=0;const hMax={};for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);const L=byDay[iso(d)]||[];wkMax=Math.max(wkMax,L.filter(isAllDay).length);
+    HOURS.forEach(h=>{hMax[h]=Math.max(hMax[h]||1,L.filter(t=>t.time&&parseInt(t.time,10)===h).length)})}
+  let cells="",hasWk=false;for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=iso(d);const list=(byDay[k]||[]).sort(sortTasks);
     if(i===35&&d.getMonth()!==m)break;
-    cells+=`<div class="day ${d.getMonth()!==m?"out":""} ${k===todayISO()?"today":""}" data-day="${k}"><span class="num">${d.getDate()}</span><div class="evs">${
-      list.map(t=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc(t.title)}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${esc(t.title)}</span></button>`).join("")}</div></div>`}
+    const cls=`day ${d.getMonth()!==m?"out":""} ${k===todayISO()?"today":""}`;
+    if(k>=wkS&&k<=wkE){hasWk=true;
+      const hOf=t=>t.time?parseInt(t.time,10):null;
+      const allDay=list.filter(isAllDay);
+      const rows=HOURS.map(h=>{const hh=String(h).padStart(2,"0")+":00";const at=list.filter(t=>hOf(t)===h).sort((a,b)=>a.time.localeCompare(b.time));
+        return `<div class="hr ${k===todayISO()&&h===nowH?"now":""}" style="--n:${hMax[h]}" data-hslot="${hh}" data-hday="${k}" title="Dodaj zadanie: ${fmtDue(k)}, ${hh}"><span class="hl">${h}:00</span><div class="hev">${at.map(t=>evBtn(t,k)).join("")}</div></div>`}).join("");
+      cells+=`<div class="${cls} wk" data-day="${k}"><span class="num">${d.getDate()}</span><div class="evs" style="--n:${wkMax}">${allDay.map(t=>evBtn(t,k)).join("")}</div><div class="hrs">${rows}</div></div>`;
+      continue}
+    cells+=`<div class="${cls}" data-day="${k}"><span class="num">${d.getDate()}</span><div class="evs">${list.map(t=>evBtn(t,k)).join("")}</div></div>`}
   el.innerHTML=`<div class="cal-head"><h2>${MONTHS[m]} ${y}</h2>
     <button class="btn" id="calPrev" aria-label="Poprzedni miesiąc">‹</button><button class="btn" id="calToday">Dziś</button><button class="btn" id="calNext" aria-label="Następny miesiąc">›</button></div>
     <div class="cal-scroll"><div class="cal">${DOW.map(d=>`<div class="dow">${d}</div>`).join("")}${cells}</div></div>
     <div class="legend">${AREAS.map(a=>`<span><span class="dot" style="--c:${a.c}"></span>${esc(a.k)}</span>`).join("")}<span>Czerwona ramka = zaległe</span></div>
-    <p class="note">Kliknij dzień, żeby zobaczyć jego rozkład godzinowy (co pół godziny, od 7:00).</p>
+    <p class="note">${hasWk?"Bieżący tydzień ma godziny 8:00–20:00 – kliknij wolną godzinę, żeby dodać tam zadanie. ":""}Kliknij numer dnia, żeby zobaczyć jego rozkład co pół godziny.</p>
     ${noDate.length?`<div class="panel" style="margin-top:12px"><h3>Bez terminu (${noDate.length})</h3><div class="list">${noDate.map(liHTML).join("")}</div></div>`:""}`;
   $("#calPrev").onclick=()=>{calMonth=new Date(y,m-1,1);render()};$("#calNext").onclick=()=>{calMonth=new Date(y,m+1,1);render()};
   $("#calToday").onclick=()=>{calMonth=null;render()};
 }
 document.addEventListener("click",e=>{
   const o=e.target.closest("[data-open]");if(o){const t=tasks.find(x=>x.id===o.dataset.open);if(t)openEditor(t);return}
+  const hs=e.target.closest("[data-hslot]");if(hs&&view==="cal"){openEditor(null,{due:hs.dataset.hday,time:hs.dataset.hslot,duration:60});return}
   const d=e.target.closest(".day");if(d&&view==="cal"){dayView=d.dataset.day;render();window.scrollTo({top:0})}
 });
 function liHTML(t){const n=t.due?daysTo(t.due):null;
