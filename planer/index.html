@@ -247,6 +247,12 @@ main{padding-block:18px 40px}
 .voice textarea{width:100%;min-height:110px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-size:16px}
 .vhint{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
 .vhint kbd{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:0 5px;font-family:inherit;font-weight:700}
+.micbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:800;background:var(--accent);color:#fff;margin-bottom:10px;cursor:pointer;touch-action:manipulation}
+.micbtn .dot{width:14px;height:14px;border-radius:50%;background:#fff;opacity:.9}
+.micbtn.on{background:#D93025}
+.micbtn.on .dot{animation:micp 1s ease-in-out infinite}
+@keyframes micp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+.interim{min-height:20px;font-size:14px;color:var(--muted);font-style:italic;margin:-4px 0 8px}
 .fromvoice{background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:12px}
 
 /* Modal */
@@ -656,7 +662,9 @@ function openEditor(t,preset,mode){
     <h2 id="mTitle">${isNew?"Nowe zadanie":"Zadanie"}</h2>
     ${isNew?`<div class="mtabs" role="tablist"><button type="button" role="tab" id="mtManual" aria-selected="${!voice}">✍️ Ręcznie</button><button type="button" role="tab" id="mtVoice" aria-selected="${voice}">🎤 Głosowo</button></div>`:""}
     ${voice?`<div class="voice">
-      <div class="vhint"><span style="font-size:20px">🎤</span><span>Powiedz, co masz zrobić – kiedy, o której, jak długo i czy to ważne, np. „jutro o 10 zadzwonić do kancelarii, pół godziny, ważne”.<br>Na telefonie: dotknij mikrofonu na klawiaturze. Na komputerze: kliknij w pole i naciśnij <kbd>Win</kbd> + <kbd>H</kbd>.</span></div>
+      <div class="vhint"><span style="font-size:20px">🎤</span><span>Powiedz, co masz zrobić – kiedy, o której, jak długo i czy to ważne, np. „jutro o 10 zadzwonić do kancelarii, pół godziny, ważne”.<br><span id="vhintMore">Na komputerze możesz też kliknąć w pole i nacisnąć <kbd>Win</kbd> + <kbd>H</kbd>.</span></span></div>
+      <button type="button" class="micbtn" id="micBtn" aria-pressed="false"><span class="dot" aria-hidden="true"></span><span id="micLbl">🎤 Naciśnij i mów po polsku</span></button>
+      <div class="interim" id="interim" aria-live="polite"></div>
       <label class="f" for="f-voice" style="margin-bottom:6px">Twój opis zadania</label>
       <textarea id="f-voice" placeholder="np. W środę o 15 zadzwonić do Michała Semczuka w sprawie pracy, pół godziny, ważne"></textarea>
       <p class="note" id="voiceMsg"></p>
@@ -692,8 +700,8 @@ function openEditor(t,preset,mode){
   if(voice){
     $("#modalRoot").querySelector(".form")?.remove();$("#modalRoot").querySelector("#mfoot")?.remove();
     $("#scrim").addEventListener("pointerdown",ev=>{if(ev.target.id==="scrim")closeModal()});
-    $("#cancelBtn").onclick=closeModal;$("#voiceGo").onclick=()=>voiceCreate(preset);
-    setTimeout(()=>$("#f-voice").focus(),30);return;
+    $("#cancelBtn").onclick=closeModal;$("#voiceGo").onclick=()=>{stopMic();voiceCreate(preset)};
+    setupMic();return;
   }
   renderSteps();
   if($("#openFile"))$("#openFile").onclick=()=>openFile(e.file);
@@ -713,10 +721,33 @@ function renderSteps(){
   $("#steps").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{editing.steps.splice(+b.dataset.rm,1);renderSteps()});
 }
 function addStep(){const i=$("#f-newstep");const v=i.value.trim();if(!v)return;editing.steps.push({t:v,done:false});i.value="";renderSteps();i.focus()}
-function closeModal(){$("#modalRoot").innerHTML="";editing=null}
+function closeModal(){stopMic();$("#modalRoot").innerHTML="";editing=null}
 const PL_DOW=[["niedziel",0],["poniedział",1],["wtor",2],["środ",3],["sród",3],["czwart",4],["piąt",5],["piat",5],["sobot",6]];
 const PL_MON=["stycz","lut","mar","kwie","maj","czerw","lip","sierp","wrze","paźdz","listop","grud"];
 const PL_NUM={"pierwsz":1,"drug":2,"trzeci":3,"czwart":4,"piąt":5,"szóst":6,"siódm":7,"ósm":8,"dziewiąt":9,"dziesiąt":10,"jedenast":11,"dwunast":12,"trzynast":13,"czternast":14,"piętnast":15,"szesnast":16,"siedemnast":17,"osiemnast":18,"dziewiętnast":19,"dwudziest":20};
+/* Polish speech recognition: always pl-PL, independent of the phone keyboard language */
+let rec=null,recOn=false,recWanted=false;
+function stopMic(){recWanted=false;try{rec&&rec.stop()}catch(e){}}
+function setupMic(){
+  const btn=$("#micBtn"),lbl=$("#micLbl"),ta=$("#f-voice"),im=$("#interim"),msg=$("#voiceMsg");
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const isTouch=matchMedia("(pointer:coarse)").matches;
+  if(isTouch)$("#vhintMore").textContent="Mów normalnym tempem. Po krótkiej przerwie nagrywanie samo się zatrzyma – możesz nacisnąć jeszcze raz i dopowiedzieć.";
+  if(!SR){btn.remove();im.remove();msg.textContent="Ta przeglądarka nie ma rozpoznawania mowy. Użyj mikrofonu na klawiaturze – w ustawieniach klawiatury (Gboard → Pisanie głosowe → Języki) wybierz polski.";setTimeout(()=>ta.focus(),30);return}
+  const ui=on=>{recOn=on;btn.classList.toggle("on",on);btn.setAttribute("aria-pressed",on);lbl.textContent=on?"Słucham… (naciśnij, aby zakończyć)":"🎤 Naciśnij i mów po polsku"};
+  const add=t=>{t=t.trim();if(!t)return;const cur=ta.value.trim();ta.value=(cur?cur+" ":"")+t};
+  const start=()=>{
+    rec=new SR();rec.lang="pl-PL";rec.interimResults=true;rec.maxAlternatives=1;rec.continuous=!isTouch;
+    rec.onstart=()=>{ui(true);msg.textContent=""};
+    rec.onresult=e=>{let fin="",tmp="";for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript+" ";else tmp+=r[0].transcript}
+      if(fin)add(fin);im.textContent=tmp};
+    rec.onerror=e=>{const m={"not-allowed":"Zezwól aplikacji na użycie mikrofonu (ikona kłódki obok adresu → Mikrofon → Zezwalaj).","service-not-allowed":"Zezwól aplikacji na użycie mikrofonu.","no-speech":"Nie usłyszałem nic. Naciśnij przycisk i mów bliżej telefonu.","audio-capture":"Nie mogę włączyć mikrofonu. Sprawdź, czy inna aplikacja go nie używa.","network":"Rozpoznawanie mowy potrzebuje internetu. Sprawdź połączenie."};
+      if(e.error!=="aborted")msg.textContent=m[e.error]||("Błąd rozpoznawania: "+e.error);if(e.error!=="no-speech")recWanted=false};
+    rec.onend=()=>{im.textContent="";if(recWanted&&!isTouch){try{rec.start();return}catch(e){}}ui(false)};
+    recWanted=true;try{rec.start()}catch(e){ui(false)}
+  };
+  btn.onclick=()=>{if(recOn){stopMic()}else start()};
+}
 function parseVoice(txt){
   let s=" "+txt.replace(/\s+/g," ").trim()+" ",low=s.toLowerCase();const cut=re=>{const m=low.match(re);if(m){const i=m.index;s=s.slice(0,i)+" "+s.slice(i+m[0].length);low=s.toLowerCase()}return m};
   const today=parse(todayISO());let due="",time="",duration=30,priority="Średni";
