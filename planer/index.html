@@ -22,7 +22,7 @@
   --fg:#18202E; --muted:#5B6678; --faint:#8A94A6;
   --accent:#2D5BD8; --accent-ink:#FFFFFF; --accent-soft:#DCE5FB;
   --danger:#C23B3B; --danger-soft:#FBE3E3; --ok:#2E8B57; --ok-soft:#DDF2E5; --warn:#B7791F; --warn-soft:#FBEFD9;
-  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280; --a-outlook:#0F7C8C;
+  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280; --a-outlook:#0F7C8C; --a-cw:#D9467A; --a-zad:#7C4DDB;
   --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.06);
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
@@ -33,14 +33,14 @@
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-zad:#A98BF5;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#10141C; --surface:#1A202B; --sunk:#141922; --line:#2A3241;
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-zad:#A98BF5;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
@@ -229,10 +229,13 @@ main{padding-block:18px 40px}
 .dcard h3{font-size:15px;margin:0 0 6px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-height:30px;align-content:center}
 .dcard h3 small{font-size:12px;color:var(--muted);font-weight:500}
 .dsub{font-size:12px;color:var(--muted);margin:-2px 0 4px}
-.drow{display:grid;grid-template-columns:82px minmax(0,1fr) 76px;align-items:center;gap:8px;padding:4px 0}
+.drow{display:grid;grid-template-columns:92px minmax(0,1fr) 76px;align-items:center;gap:8px;padding:4px 0}
 .drow .lab{display:flex;align-items:center;gap:6px;font-weight:600}
 .drow .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 .drow .num small{color:var(--muted);font-weight:500;margin-left:4px}
+.dbarw{display:flex;flex-direction:column;gap:2px;min-width:0}
+.znote{font-size:11px;color:var(--muted);line-height:1.2}
+.drow .lab{line-height:1.15}
 .dbar{height:10px;background:var(--sunk);border-radius:99px;overflow:hidden}
 .dbar i{display:block;height:100%;background:var(--c);border-radius:99px}
 .drow input[type=range]{width:100%;margin:0;-webkit-appearance:none;appearance:none;height:10px;border-radius:99px;background:linear-gradient(var(--c),var(--c)) 0/var(--p,0%) 100% no-repeat,var(--sunk);cursor:pointer}
@@ -433,15 +436,21 @@ const METRICS=[
   {k:"waga",l:"Waga",unit:"kg",c:"var(--a-zdrowie)",kg:true},
   {k:"dieta",l:"Dieta",unit:"%",c:"var(--ok)"},
   {k:"angielski",l:"Angielski",unit:"%",c:"var(--a-angielski)"},
-  {k:"praca",l:"Praca",unit:"%",c:"var(--a-praca)"}];
-function dayVal(date,k){const d=daily[date];if(d&&typeof d[k]==="number")return d[k];if(k==="waga"){const w=weights.find(x=>x.date===date);if(w)return w.kg}return null}
+  {k:"praca",l:"Praca",unit:"%",c:"var(--a-praca)"},
+  {k:"cwiczenia",l:"Ćwiczenia",unit:"%",c:"var(--a-cw)"},
+  {k:"zadania",l:"Realizacja zadań",unit:"%",c:"var(--a-zad)",auto:true}];
+/* task completion for a day: everything planned in the planner for that date (incl. calendar-only entries),
+   except weekly recurring events (no per-day status), Outlook entries and parked tasks */
+function dayTasks(date){const ts=tasks.filter(t=>t.due===date&&!isRepeat(t)&&!isParked(t));return{n:ts.length,done:ts.filter(t=>t.status==="done").length}}
+function dayVal(date,k){if(k==="zadania"){const z=dayTasks(date);return z.n?Math.round(z.done/z.n*100):null}const d=daily[date];if(d&&typeof d[k]==="number")return d[k];if(k==="waga"){const w=weights.find(x=>x.date===date);if(w)return w.kg}return null}
 function prevVal(date,k){const dates=[...new Set([...Object.keys(daily),...weights.map(w=>w.date)])].filter(x=>x<date).sort().reverse();for(const d of dates){const v=dayVal(d,k);if(v!=null)return v}return null}
 function avgVal(date,k){const vs=[];for(let i=0;i<7;i++){const d=new Date(parse(date));d.setDate(d.getDate()-i);const v=dayVal(iso(d),k);if(v!=null)vs.push(v)}return vs.length?{v:vs.reduce((a,b)=>a+b,0)/vs.length,n:vs.length}:null}
 function roRow(m,v,note){
   const txt=v==null?"–":(m.kg?fmtKg(v)+" kg":Math.round(v)+" %");
-  const bar=m.kg?`<span class="wnote">${note||""}</span>`:`<div class="dbar"><i style="width:${v==null?0:Math.max(0,Math.min(100,v))}%"></i></div>`;
+  const bar=m.kg?`<span class="wnote">${note||""}</span>`:`<div class="dbarw"><div class="dbar"><i style="width:${v==null?0:Math.max(0,Math.min(100,v))}%"></i></div>${m.auto&&note?`<small class="znote">${note}</small>`:""}</div>`;
   return `<div class="drow" style="--c:${m.c}"><span class="lab"><span class="dot"></span>${m.l}</span>${bar}<span class="num">${txt}</span></div>`;
 }
+const zNote=date=>{const z=dayTasks(date);return z.n?`${z.done} z ${z.n} zrobione`:"brak zadań na ten dzień"};
 function renderDaily(){
   const el=$("#daily");if(!el)return;
   if(!dailyDate)dailyDate=todayISO();
@@ -454,28 +463,29 @@ function renderDaily(){
   el.innerHTML=`<div class="dcard now"><div class="daily-head"><h2>Mój dzień</h2><input type="date" id="dDate" value="${date}" max="${todayISO()}" aria-label="Dzień"><span class="sp"></span><button class="btn" id="dToggle" type="button" aria-expanded="${dailyOpen}" style="padding:4px 10px">${dailyOpen?"Zwiń ▴":"Rozwiń ▾"}</button></div>
   ${dailyOpen?`<div class="dsub">${isToday?"Dziś, ":""}${dname(date)}</div>
     ${METRICS.map(m=>{const v=dailyDraft[m.k];
+      if(m.auto)return roRow(m,dayVal(date,m.k),zNote(date));
       if(m.kg){const p=prevVal(date,"waga");let d="";if(v!=null&&p!=null){const x=v-p;d=Math.abs(x)<0.05?"bez zmian":"Δ "+(x>0?"+":"−")+fmtKg(Math.abs(x))+" kg"}
         return `<div class="drow" style="--c:${m.c}"><label class="lab" for="d-waga"><span class="dot"></span>Waga</label><span class="wnote">${d}</span><span class="num"><input type="text" inputmode="decimal" id="d-waga" value="${v!=null?fmtKg(v):""}" placeholder="85,5" autocomplete="off"><small>kg</small></span></div>`}
       return `<div class="drow" style="--c:${m.c}"><label class="lab" for="d-${m.k}"><span class="dot"></span>${m.l}</label><input type="range" id="d-${m.k}" min="0" max="100" step="5" value="${v!=null?v:0}" style="--p:${v!=null?v:0}%"><span class="num" id="o-${m.k}">${v!=null?v+" %":"–"}</span></div>`}).join("")}
     <div class="daily-foot"><button class="btn primary" id="dSave" type="button">Zapisz dzień</button>${saved?`<span class="saved">✓ Zapisano</span>`:`<span class="note" style="padding:0">Ustaw i zapisz.</span>`}</div>`:""}
   </div>
   ${dailyOpen?`<div class="dcard"><h3>${dname(yd)[0].toUpperCase()+dname(yd).slice(1)}</h3><div class="dsub">dzień poprzedni</div>
-    ${METRICS.map(m=>{const v=dayVal(yd,m.k);let note="";if(m.kg&&v!=null){const p=prevVal(yd,"waga");if(p!=null){const x=v-p;note=Math.abs(x)<0.05?"bez zmian":"Δ "+(x>0?"+":"−")+fmtKg(Math.abs(x))+" kg"}}return roRow(m,v,note)}).join("")}
+    ${METRICS.map(m=>{const v=dayVal(yd,m.k);let note="";if(m.auto)note=zNote(yd);if(m.kg&&v!=null){const p=prevVal(yd,"waga");if(p!=null){const x=v-p;note=Math.abs(x)<0.05?"bez zmian":"Δ "+(x>0?"+":"−")+fmtKg(Math.abs(x))+" kg"}}return roRow(m,v,note)}).join("")}
   </div>
   <div class="dcard"><h3>Średnia z tygodnia</h3><div class="dsub">ostatnie 7 dni</div>
-    ${METRICS.map(m=>{const a=avgVal(date,m.k);return roRow(m,a?a.v:null,a?`z ${a.n} ${a.n===1?"pomiaru":"pomiarów"}`:"")}).join("")}
+    ${METRICS.map(m=>{const a=avgVal(date,m.k);return roRow(m,a?a.v:null,a?(m.auto?`średnio z ${a.n} ${a.n===1?"dnia":"dni"} z zadaniami`:`z ${a.n} ${a.n===1?"pomiaru":"pomiarów"}`):"")}).join("")}
   </div>`:""}`;
   $("#dDate").onchange=e=>{if(e.target.value){dailyDate=e.target.value;dailyDraft=null;renderDaily()}};
   $("#dToggle").onclick=()=>{dailyOpen=!dailyOpen;try{localStorage.setItem("planer-daily",dailyOpen?"1":"0")}catch(e){}renderDaily()};
   if(!dailyOpen)return;
-  METRICS.forEach(m=>{const i=$("#d-"+m.k);if(m.kg){i.oninput=()=>{const n=parseFloat(i.value.replace(",","."));dailyDraft[m.k]=n>20&&n<350?Math.round(n*10)/10:null}}
+  METRICS.forEach(m=>{if(m.auto)return;const i=$("#d-"+m.k);if(m.kg){i.oninput=()=>{const n=parseFloat(i.value.replace(",","."));dailyDraft[m.k]=n>20&&n<350?Math.round(n*10)/10:null}}
     else{i.oninput=()=>{dailyDraft[m.k]=+i.value;i.style.setProperty("--p",i.value+"%");$("#o-"+m.k).textContent=i.value+" %"}}});
   $("#dSave").onclick=saveDaily;
 }
 async function saveDaily(){
   const d=dailyDraft,date=d.date;const raw=$("#d-waga").value.trim();
   if(raw&&d.waga==null){toast("Wpisz wagę w kilogramach, np. 85,5");$("#d-waga").focus();return}
-  const body={date,at:new Date().toISOString()};METRICS.forEach(m=>{if(d[m.k]!=null)body[m.k]=d[m.k]});
+  const body={date,at:new Date().toISOString()};METRICS.forEach(m=>{if(!m.auto&&d[m.k]!=null)body[m.k]=d[m.k]});
   daily[date]=body;if(body.waga!=null){const i=weights.findIndex(x=>x.date===date);const w={date,kg:body.waga};if(i>=0)weights[i]=w;else weights.push(w)}
   renderDaily();if(view==="weight")render();
   try{await db.doc("daily/"+date).set(body);if(body.waga!=null)await db.doc("weights/"+date).set({date,kg:body.waga,at:body.at});toast("Zapisano dzień "+fmtDue(date))}
@@ -1056,6 +1066,7 @@ window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["bo
     tasks=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(!snap.metadata.fromCache||tasks.length){loaded=true;clearTimeout(timer);if(!snap.metadata.fromCache&&$("#status").textContent.startsWith("Brak"))$("#status").textContent=""}
     if(!drag?.started){renderFilters();render()}
+    if(!document.activeElement?.closest?.("#daily"))renderDaily();
     gcSchedule();
     if(loaded&&!tasks.length)$("#view").innerHTML=`<div class="empty">Nie masz jeszcze żadnych zadań. Kliknij <b>+ Nowe zadanie</b>, żeby dodać pierwsze.</div>`;
   },err=>{loaded=true;clearTimeout(timer);$("#status").textContent=err.code==="permission-denied"?"Brak dostępu do danych tego konta.":"Nie udało się wczytać zadań. Odśwież za chwilę.";render()});
