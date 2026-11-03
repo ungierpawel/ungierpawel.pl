@@ -1093,7 +1093,10 @@ window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["bo
   window.addEventListener("online",()=>{$("#status").textContent=""});
   window.addEventListener("offline",()=>{$("#status").textContent="Jesteś offline – zmiany zapiszą się w telefonie i wyślą, gdy wróci internet."});
   }
-  if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if("serviceWorker" in navigator){ // when a new version of the app arrives, reload once so it shows immediately
+    const hadCtl=!!navigator.serviceWorker.controller;let reloaded=false;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{if(hadCtl&&!reloaded&&!document.querySelector(".modal")){reloaded=true;location.reload()}});
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{r.update();document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")r.update()})}).catch(()=>{});}
 })();
 </script>
 
