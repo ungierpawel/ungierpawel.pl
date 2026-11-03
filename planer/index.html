@@ -294,6 +294,10 @@ main{padding-block:18px 40px}
 .rep-row select,.rep-row input{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:7px 8px;font:inherit;color:var(--fg);min-width:0}
 .rep-sum{font-size:13px;color:var(--accent);font-weight:600}
 @media (max-width:520px){.rep-row{grid-template-columns:1fr 1fr}.rep-row label:first-child{grid-column:1/-1}}
+.occ{border:2px solid var(--accent);background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px}
+.occ-h{font-size:14px}
+.occ-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.occ select{width:100%}
 .fromvoice{background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;margin-bottom:12px}
 
 /* Modal */
@@ -393,7 +397,9 @@ const isRepeat=t=>!!(t.repeat&&Array.isArray(t.repeat.days)&&t.repeat.days.lengt
 function repText(r){const d=REP_DOW.filter(x=>r.days.includes(x[0]));const all=d.length===7,wd=d.length===5&&!r.days.includes(0)&&!r.days.includes(6);
   return "Co tydzień: "+(all?"codziennie":wd?"od poniedziałku do piątku":d.map(x=>x[2]).join(", "))+", godz. "+r.time}
 function occursOn(t,k){if(!isRepeat(t))return t.due===k;const r=t.repeat;if(r.from&&k<r.from)return false;if(r.until&&k>r.until)return false;return r.days.includes(parse(k).getDay())}
-function onDay(t,k){return isRepeat(t)?{...t,due:k,time:t.repeat.time,_occ:true}:t}
+const occLevel=(t,k)=>(t.occ&&t.occ[k])||"Nie rozpoczęte";
+function onDay(t,k){if(!isRepeat(t))return t;const lv=occLevel(t,k);return{...t,due:k,time:t.repeat.time,_occ:true,level:lv,status:lv==="Zakończone"?"done":"todo"}}
+let occDate=null; // date of the recurring occurrence opened from the calendar
 const isParked=t=>!!t.parked;
 let showParked=false;
 
@@ -441,7 +447,7 @@ const METRICS=[
   {k:"zadania",l:"Realizacja zadań",unit:"%",c:"var(--a-zad)",auto:true}];
 /* task completion for a day: everything planned in the planner for that date (incl. calendar-only entries),
    except weekly recurring events (no per-day status), Outlook entries and parked tasks */
-function dayTasks(date){const ts=tasks.filter(t=>t.due===date&&!isRepeat(t)&&!isParked(t));return{n:ts.length,done:ts.filter(t=>t.status==="done").length}}
+function dayTasks(date){const ts=tasks.filter(t=>!isParked(t)&&(isRepeat(t)?occursOn(t,date):t.due===date)).map(t=>onDay(t,date));return{n:ts.length,done:ts.filter(t=>t.status==="done").length}}
 function dayVal(date,k){if(k==="zadania"){const z=dayTasks(date);return z.n?Math.round(z.done/z.n*100):null}const d=daily[date];if(d&&typeof d[k]==="number")return d[k];if(k==="waga"){const w=weights.find(x=>x.date===date);if(w)return w.kg}return null}
 function prevVal(date,k){const dates=[...new Set([...Object.keys(daily),...weights.map(w=>w.date)])].filter(x=>x<date).sort().reverse();for(const d of dates){const v=dayVal(d,k);if(v!=null)return v}return null}
 function avgVal(date,k){const vs=[];for(let i=0;i<7;i++){const d=new Date(parse(date));d.setDate(d.getDate()-i);const v=dayVal(iso(d),k);if(v!=null)vs.push(v)}return vs.length?{v:vs.reduce((a,b)=>a+b,0)/vs.length,n:vs.length}:null}
@@ -629,7 +635,7 @@ function renderDay(el){
   const start=DAY_START*60,end=DAY_END*60;
   const blocks=items.map(it=>{const s=Math.max(it.s,start),e=Math.min(Math.max(it.e,s+15),end);if(e<=start||s>=end)return"";
     const top=(s-start)/30*SLOT_PX,h=Math.max(22,(e-s)/30*SLOT_PX-2);const w=100/it.n;
-    return `<button class="blk ${it.t.status==="done"?"done":""} ${h<44?"short":""}" data-open="${esc(it.t.id)}" style="--c:${areaColor(it.t.area)};top:${top+1}px;height:${h}px;left:calc(58px + (100% - 64px) * ${it.col*w/100} + 3px);width:calc((100% - 64px) * ${w/100} - 3px)" title="${esc(it.t.title)}"><b>${it.t._occ?"🔁 ":""}${esc(it.t.title)}</b><small>${it.t.time}–${fromMin(it.e)}</small></button>`}).join("");
+    return `<button class="blk ${it.t.status==="done"?"done":""} ${h<44?"short":""}" data-open="${esc(it.t.id)}"${it.t._occ?` data-occ="${k}"`:""} style="--c:${areaColor(it.t.area)};top:${top+1}px;height:${h}px;left:calc(58px + (100% - 64px) * ${it.col*w/100} + 3px);width:calc((100% - 64px) * ${w/100} - 3px)" title="${esc(it.t.title)}"><b>${it.t._occ?"🔁 ":""}${esc(it.t.title)}</b><small>${it.t.time}–${fromMin(it.e)}</small></button>`}).join("");
   const outside=items.filter(it=>it.e<=start||it.s>=end).map(it=>it.t);
   let rows="";SLOTS.forEach((s,i)=>{const half=s.endsWith(":30");rows+=`<div class="t ${half?"half":""}">${half?"":s}</div><div class="s ${half?"half":""}" data-slot="${s}" data-time="${s}"></div>`});
   let now="";if(k===todayISO()){const n=new Date(),m=n.getHours()*60+n.getMinutes();if(m>=start&&m<end)now=`<div class="now" style="top:${(m-start)/30*SLOT_PX}px"></div>`}
@@ -657,7 +663,7 @@ function renderCal(el){
   const noDate=v.filter(t=>!t.due&&!isRepeat(t)&&t.status!=="done");
   const nowD=new Date(),wkStart=new Date(nowD.getFullYear(),nowD.getMonth(),nowD.getDate()-((nowD.getDay()+6)%7)),wkEnd=new Date(wkStart);wkEnd.setDate(wkStart.getDate()+6);
   const wkS=iso(wkStart),wkE=iso(wkEnd),nowH=nowD.getHours();
-  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&!t._occ&&!t._g&&k<todayISO()?"late":""}" data-open="${esc(t.id)}" style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title+(t._occ?" (cykliczne)":""))}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${t._occ?"🔁 ":""}${t._g?"📅 ":""}${esc(t.title)}</span></button>`;
+  const evBtn=(t,k)=>`<button class="ev ${t.status==="done"?"done":""} ${t.status!=="done"&&!t._occ&&!t._g&&k<todayISO()?"late":""}" data-open="${esc(t.id)}"${t._occ?` data-occ="${k}"`:""} style="--c:${areaColor(t.area)}" title="${esc((t.time?t.time+" ":"")+t.title+(t._occ?" (cykliczne – "+t.level+")":""))}"><span class="dot"></span>${t.time?`<span class="tm">${t.time}</span>`:""}<span>${t._occ?"🔁 ":""}${t._g?"📅 ":""}${esc(t.title)}</span></button>`;
   const HOURS=Array.from({length:13},(_,i)=>8+i);
   const isAllDay=t=>{const h=t.time?parseInt(t.time,10):null;return h===null||h<8||h>20};
   let wkMax=0;const hMax={};for(let i=0;i<7;i++){const d=new Date(wkStart);d.setDate(wkStart.getDate()+i);const L=byDay[iso(d)]||[];wkMax=Math.max(wkMax,L.filter(isAllDay).length);
@@ -684,7 +690,7 @@ function renderCal(el){
   $("#gcBtn").onclick=gcClick;gcBadge();
 }
 document.addEventListener("click",e=>{
-  const o=e.target.closest("[data-open]");if(o){if(o.dataset.open.startsWith("g:")){gcShow(o.dataset.open);return}const t=tasks.find(x=>x.id===o.dataset.open);if(t)openEditor(t);return}
+  const o=e.target.closest("[data-open]");if(o){if(o.dataset.open.startsWith("g:")){gcShow(o.dataset.open);return}const t=tasks.find(x=>x.id===o.dataset.open);if(t){occDate=o.dataset.occ||null;openEditor(t)}return}
   const hs=e.target.closest("[data-hslot]");if(hs&&view==="cal"){openEditor(null,{due:hs.dataset.hday,time:hs.dataset.hslot,duration:60});return}
   const d=e.target.closest(".day");if(d&&view==="cal"){dayView=d.dataset.day;render();window.scrollTo({top:0})}
 });
@@ -838,6 +844,11 @@ function openEditor(t,preset,mode){
       <div class="mfoot"><span class="sp"></span><button class="btn" id="cancelBtn" type="button">Anuluj</button><button class="btn primary" id="voiceGo" type="button">Utwórz zadanie</button></div>
     </div></div></div>`:""}
     ${fromVoice?`<div class="fromvoice">✓ Przygotowałem zadanie z Twojego opisu. Sprawdź i kliknij „Dodaj zadanie”.</div>`:""}
+    ${!isNew&&isRepeat(e)&&occDate?(()=>{const x=parse(occDate),lv=occLevel(e,occDate);return `<div class="occ" id="occBox">
+      <div class="occ-h">🔁 Ten dzień: <b>${DOW_L[x.getDay()]}, ${x.getDate()} ${MONTHS_G[x.getMonth()]}</b>, godz. ${esc(e.repeat.time)}</div>
+      <div class="occ-row"><label class="f" style="margin:0;flex:1;min-width:160px">Poziom zaawansowania tego dnia<select id="f-occ">${LEVELS.map(l=>`<option ${l===lv?"selected":""}>${l}</option>`).join("")}</select></label>
+      <button type="button" class="btn ${lv==="Zakończone"?"":"primary"}" id="occDone">${lv==="Zakończone"?"↺ Cofnij zakończenie":"✓ Zakończ ten dzień"}</button></div>
+      <small class="note" style="padding:0">Zmiana dotyczy tylko tego dnia. Pozostałe dni serii zostają „Nie rozpoczęte”, dopóki ich nie zmienisz.</small></div>`})():""}
     <form class="form" id="form">
       <label class="f full">Cel / zadanie<input id="f-title" required value="${esc(e.title)}" placeholder="np. Zapisać się do lekarza"></label>
       ${e.file&&e.file.doc?`<div class="full" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--ok-soft);border-radius:10px;padding:10px 12px"><span style="font-size:22px">📄</span><span style="flex:1;min-width:0"><b style="display:block">${esc(e.file.label||e.file.name)}</b><small class="note" style="padding:0">${esc(e.file.name)}</small></span>${/^ms-excel:/.test(e.file.excel||"")?`<a class="btn primary" href="${esc(e.file.excel)}" style="text-decoration:none">Otwórz w Excelu</a>`:""}${/^https:\/\//.test(e.file.url||"")?`<a class="btn primary" href="${esc(e.file.url)}" target="_blank" rel="noopener" style="text-decoration:none">Otwórz w Excelu ↗</a>`:""}<button type="button" class="btn ${e.file.url?"":"primary"}" id="viewFile">Otwórz ściągę</button><button type="button" class="btn" id="openFile">Pobierz plik Excel</button></div>`:""}
@@ -887,6 +898,12 @@ function openEditor(t,preset,mode){
   if($("#viewFile"))$("#viewFile").onclick=()=>viewFile(e.file);
   $("#scrim").addEventListener("pointerdown",ev=>{if(ev.target.id==="scrim")closeModal()});
   $("#cancelBtn").onclick=closeModal;$("#saveBtn").onclick=save;
+  if($("#occBox")){const d=occDate,setOcc=async lv=>{const occ={...(e.occ||{})};if(lv==="Nie rozpoczęte")delete occ[d];else occ[d]=lv;e.occ=occ;
+      const i=tasks.findIndex(x=>x.id===e.id);if(i>=0)tasks[i]={...tasks[i],occ};
+      try{await db.doc("tasks/"+e.id).update({occ});toast(lv==="Zakończone"?"Zakończono na "+fmtDue(d):"Zapisano poziom na "+fmtDue(d)+": "+lv)}catch(err){toast("Nie udało się zapisać")}
+      render();renderDaily()};
+    $("#f-occ").onchange=ev=>setOcc(ev.target.value);
+    $("#occDone").onclick=()=>{const done=occLevel(e,d)==="Zakończone";setOcc(done?"Nie rozpoczęte":"Zakończone");closeModal()}}
   $("#addStep").onclick=addStep;$("#f-newstep").addEventListener("keydown",ev=>{if(ev.key==="Enter"){ev.preventDefault();addStep()}});
   $("#form").addEventListener("submit",ev=>{ev.preventDefault();save()});
   const repSum=()=>{const d=[...document.querySelectorAll("#repDays [aria-pressed=true]")].map(b=>+b.dataset.dow);$("#repSum").textContent=d.length?repText({days:d,time:$("#f-reptime").value}):"Zaznacz co najmniej jeden dzień."};
@@ -904,7 +921,7 @@ function renderSteps(){
   $("#steps").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{editing.steps.splice(+b.dataset.rm,1);renderSteps()});
 }
 function addStep(){const i=$("#f-newstep");const v=i.value.trim();if(!v)return;editing.steps.push({t:v,done:false});i.value="";renderSteps();i.focus()}
-function closeModal(){stopMic();$("#modalRoot").innerHTML="";editing=null}
+function closeModal(){stopMic();occDate=null;$("#modalRoot").innerHTML="";editing=null}
 const PL_DOW=[["niedziel",0],["poniedział",1],["wtor",2],["środ",3],["sród",3],["czwart",4],["piąt",5],["piat",5],["sobot",6]];
 const PL_MON=["stycz","lut","mar","kwie","maj","czerw","lip","sierp","wrze","paźdz","listop","grud"];
 const PL_NUM={"pierwsz":1,"drug":2,"trzeci":3,"czwart":4,"piąt":5,"szóst":6,"siódm":7,"ósm":8,"dziewiąt":9,"dziesiąt":10,"jedenast":11,"dwunast":12,"trzynast":13,"czternast":14,"piętnast":15,"szesnast":16,"siedemnast":17,"osiemnast":18,"dziewiętnast":19,"dwudziest":20};
@@ -1016,7 +1033,7 @@ async function save(){
   const prev=editing.status;
   const body={title,area:g("f-area"),status:g("f-status"),due:g("f-due"),time:g("f-due")?g("f-time"):"",duration:+g("f-duration")||30,kind:$("#f-event").checked?"event":"task",parked:$("#f-parked").checked,priority:g("f-priority"),level:g("f-level"),people:g("f-people"),
     steps:editing.steps.filter(s=>s.t.trim()).map(s=>({t:s.t.trim(),done:!!s.done})),next:g("f-next"),notes:g("f-notes"),link:g("f-link"),linkLabel:g("f-link")===(editing.link||"")?(editing.linkLabel||""):"",
-    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null,...(editing.file?{file:editing.file}:{})};
+    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null,...(editing.file?{file:editing.file}:{}),...(editing.occ?{occ:editing.occ}:{})};
   // keep "Poziom zaawansowania: Zakończone" and "Status: Zrobione" in sync
   if(body.level==="Zakończone"&&body.status!=="done"&&(editing.level!=="Zakończone"||editing.status===body.status))body.status="done";
   else if(body.status!=="done"&&body.level==="Zakończone"&&editing.status==="done")body.level="Zaawansowane";
