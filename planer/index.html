@@ -343,6 +343,7 @@ body.locked{overflow:hidden}
       <button role="tab" id="tab-weight" data-view="weight" aria-selected="false">Waga</button>
     </div>
     <button class="btn primary" id="newBtn">+ Nowe zadanie</button>
+    <button class="btn" id="notifBtn" type="button" hidden></button>
     <button class="btn" id="logoutBtn" hidden title="Wyloguj">Wyloguj</button>
   </div>
   <div class="wrap filters" id="filters"></div>
@@ -393,6 +394,9 @@ function progress(t){const st=t.steps||[];if(t.status==="done")return 100;if(!st
 function visible(){return tasks.filter(t=>!filter.size||filter.has(t.area))}
 const isEvent=t=>t.kind==="event";
 const REP_DOW=[[1,"Pn","poniedziałek"],[2,"Wt","wtorek"],[3,"Śr","środa"],[4,"Cz","czwartek"],[5,"Pt","piątek"],[6,"So","sobota"],[0,"Nd","niedziela"]];
+const REMINDS=[[0,"bez przypomnienia"],[5,"5 min wcześniej"],[10,"10 min wcześniej"],[15,"15 min wcześniej"],[30,"30 min wcześniej"],[60,"1 godz. wcześniej"],[120,"2 godz. wcześniej"],[1440,"1 dzień wcześniej"]];
+const hasTime=t=>isRepeat(t)?!!t.repeat.time:!!t.time;
+function remindOf(t){if(typeof t.remind==="number")return t.remind;return hasTime(t)?15:0} // default: 15 min before timed entries
 const isRepeat=t=>!!(t.repeat&&Array.isArray(t.repeat.days)&&t.repeat.days.length);
 function repText(r){const d=REP_DOW.filter(x=>r.days.includes(x[0]));const all=d.length===7,wd=d.length===5&&!r.days.includes(0)&&!r.days.includes(6);
   return "Co tydzień: "+(all?"codziennie":wd?"od poniedziałku do piątku":d.map(x=>x[2]).join(", "))+", godz. "+r.time}
@@ -427,6 +431,7 @@ document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.cl
 function setView(v){view=v;if(v!=="cal")dayView=null;document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
   try{localStorage.setItem("planer-view",v)}catch(e){} if(location.hash!=="#"+v)history.replaceState(null,"","#"+v);render()}
 $("#newBtn").addEventListener("click",()=>openEditor(null,{}));
+$("#notifBtn").addEventListener("click",()=>ntClick());
 
 /* ---------- render ---------- */
 function render(){
@@ -724,20 +729,25 @@ async function gcFetch(url,opt={}){
 }
 const gcDOW=["SU","MO","TU","WE","TH","FR","SA"];
 const gcAddMin=(d,t,m)=>{const x=new Date(d+"T"+t+":00");x.setMinutes(x.getMinutes()+m);return iso(x)+"T"+pad2(x.getHours())+":"+pad2(x.getMinutes())+":00"};
-const gcWanted=t=>!isParked(t)&&(isRepeat(t)||(t.due&&t.time));
-function gcSig(o){return [o.title||"",o.due||"",o.time||"",+o.duration||30,o.done?1:0,o.rrule||""].join("|")}
-function gcTaskSig(t){const r=isRepeat(t)?t.repeat:null;return gcSig({title:t.title,due:r?r.from:t.due,time:r?r.time:t.time,duration:t.duration,done:t.status==="done",rrule:r?gcRule(r):""})}
+const gcWanted=t=>!isParked(t)&&(isRepeat(t)||!!t.due); // every planner entry with a date goes to Outlook
+function gcSig(o){return [o.title||"",o.due||"",o.time||"",o.time?(+o.duration||30):0,o.done?1:0,o.rrule||""].join("|")}
+function gcTaskSig(t){const r=isRepeat(t)?t.repeat:null;return gcSig({title:t.title,due:r?r.from:t.due,time:r?r.time:t.time,duration:t.duration,done:t.status==="done",rrule:r?gcRule(r):""})+"|r"+remindOf(t)}
+const gcBase=sig=>(sig||"").replace(/\|r-?\d+$/,"");
 function gcRule(r){return "RRULE:FREQ=WEEKLY;BYDAY="+r.days.map(d=>gcDOW[d]).join(",")+(r.until?";UNTIL="+r.until.replace(/-/g,"")+"T225959Z":"")}
-function gcEvSig(ev){const s=(ev.start&&ev.start.dateTime)||"",e=(ev.end&&ev.end.dateTime)||"";if(!s)return null;
+function gcEvSig(ev){const s=(ev.start&&ev.start.dateTime)||"",e=(ev.end&&ev.end.dateTime)||"";if(!s)return null; // all-day: no pull
   const dur=Math.round((new Date(e)-new Date(s))/60000);const done=/^✓ /.test(ev.summary||"");
   return gcSig({title:(ev.summary||"").replace(/^✓ /,"").replace(/^🔁 /,""),due:s.slice(0,10),time:s.slice(11,16),duration:dur,done,rrule:(ev.recurrence||[]).find(x=>x.startsWith("RRULE"))||""})}
-function gcBody(t){const r=isRepeat(t)?t.repeat:null,due=r?r.from:t.due,time=r?r.time:t.time,dur=+t.duration||30;
+function gcBody(t){const r=isRepeat(t)?t.repeat:null,due=r?r.from:t.due,time=r?r.time:t.time,dur=+t.duration||30,rem=remindOf(t);
   const sig=gcTaskSig(t);
   const b={summary:(t.status==="done"?"✓ ":"")+t.title,
     description:[t.next?"Następny krok: "+t.next:"",t.notes||"","— z Mojego Planera (ungierpawel.pl/planer), obszar: "+(t.area||"")].filter(Boolean).join("\n\n"),
-    start:{dateTime:due+"T"+time+":00",timeZone:GC_TZ},end:{dateTime:gcAddMin(due,time,dur),timeZone:GC_TZ},
-    extendedProperties:{private:{planer:"1",planerId:t.id,planerSig:sig}},reminders:{useDefault:true}};
-  if(r)b.recurrence=[gcRule(r)];else b.recurrence=[];
+    extendedProperties:{private:{planer:"1",planerId:t.id,planerSig:sig}}};
+  if(time){b.start={dateTime:due+"T"+time+":00",timeZone:GC_TZ};b.end={dateTime:gcAddMin(due,time,dur),timeZone:GC_TZ};
+    b.reminders={useDefault:false,overrides:rem>0&&t.status!=="done"?[{method:"popup",minutes:rem}]:[]};b.transparency="opaque"}
+  else{const n=new Date(due+"T12:00:00");n.setDate(n.getDate()+1);b.start={date:due};b.end={date:iso(n)};b.transparency="transparent";
+    // all-day entries (deadlines): "1 dzień wcześniej" = 9:00 the day before
+    b.reminders={useDefault:false,overrides:rem>=1440&&t.status!=="done"?[{method:"popup",minutes:900}]:[]}}
+  b.recurrence=r?[gcRule(r)]:[];
   return b}
 async function gcSync(){
   if(!gcOn()){gcBadge();return}
@@ -753,7 +763,7 @@ async function gcSync(){
       const tSig=gcTaskSig(t);
       if(!ev){const j=await gcFetch(GC_API,{method:"POST",body:JSON.stringify(gcBody(t))});pushed++;continue}
       const stored=ev.extendedProperties.private.planerSig||"",gSig=gcEvSig(ev);
-      if(gSig&&gSig!==stored&&!isRepeat(t)){ // changed in Outlook/Google → update the planner
+      if(gSig&&gSig!==gcBase(stored)&&!isRepeat(t)&&t.time){ // changed in Outlook/Google → update the planner
         const s=ev.start.dateTime,e=ev.end.dateTime,dur=Math.round((new Date(e)-new Date(s))/60000);
         const patch={title:(ev.summary||t.title).replace(/^✓ /,""),due:s.slice(0,10),time:s.slice(11,16),duration:DURS.includes(dur)?dur:(+t.duration||30)};
         await db.doc("tasks/"+t.id).update(patch);Object.assign(t,patch);
@@ -787,6 +797,41 @@ function gcClick(){if(gcOn())gcSync();else gcConnect()}
 function gcOnDay(k){return gcEvents.filter(e=>e.allDay?(k>=e.start&&k<e.end):e.start===k).map(e=>({id:"g:"+e.id,title:e.title,due:k,time:e.time,duration:e.duration,area:"Outlook",status:"todo",_g:e}))}
 function gcShow(id){const e=gcEvents.find(x=>"g:"+x.id===id);if(!e)return;
   toast("📅 "+e.title+(e.time?" – "+fmtDue(e.start)+", "+e.time:" – "+fmtDue(e.start))+(e.where?" ("+e.where+")":"")+". Wpis z kalendarza Outlook – zmieniaj go w Outlooku.")}
+
+/* ---------- in-app reminders (system notifications while the planner is open) ---------- */
+const NT_KEY="planer-notified";
+let ntSent={};try{ntSent=JSON.parse(localStorage.getItem(NT_KEY)||"{}")}catch(e){}
+const ntOk=()=>"Notification" in window&&Notification.permission==="granted";
+function ntBtn(){const b=document.getElementById("notifBtn");if(!b)return;
+  if(!("Notification" in window)){b.hidden=true;return}
+  const p=Notification.permission;b.hidden=false;
+  b.textContent=p==="granted"?"🔔":p==="denied"?"🔕":"🔔 Włącz powiadomienia";
+  b.title=p==="granted"?"Powiadomienia są włączone. Kliknij, żeby wysłać próbne.":p==="denied"?"Powiadomienia są zablokowane – zezwól na nie w ustawieniach strony (ikona kłódki obok adresu).":"Kliknij, żeby planer przypominał o zbliżających się zadaniach i spotkaniach."}
+async function ntShow(title,body,tag){
+  const opt={body,tag,icon:"icons/icon-192.png",badge:"icons/icon-192.png",vibrate:[200,100,200],renotify:true,requireInteraction:false,data:{url:location.href.split("#")[0]+"#cal"}};
+  try{const r=await navigator.serviceWorker?.getRegistration();if(r){await r.showNotification(title,opt);return}}catch(e){}
+  try{new Notification(title,opt)}catch(e){}}
+async function ntClick(){
+  if(!("Notification" in window))return;
+  if(Notification.permission==="granted"){ntShow("🔔 Powiadomienia działają","Planer przypomni Ci o zadaniach i spotkaniach przed ich rozpoczęciem.","test");return}
+  if(Notification.permission==="denied"){toast("Powiadomienia są zablokowane. Kliknij kłódkę obok adresu strony → Powiadomienia → Zezwalaj.");return}
+  const p=await Notification.requestPermission();ntBtn();if(p==="granted"){toast("Włączono powiadomienia");ntShow("🔔 Powiadomienia włączone","Przypomnę Ci o zbliżających się zadaniach i spotkaniach.","test");ntCheck()}}
+function ntUpcoming(){ // timed entries for today and tomorrow
+  const out=[];const d0=new Date();
+  for(let i=0;i<2;i++){const d=new Date(d0);d.setDate(d0.getDate()+i);const k=iso(d);
+    tasks.filter(t=>!isParked(t)&&occursOn(t,k)).map(t=>onDay(t,k)).forEach(t=>{if(t.time&&t.status!=="done")out.push({id:t.id,title:t.title,k,time:t.time,rem:remindOf(t),where:""})});
+    gcOnDay(k).forEach(e=>{if(e.time)out.push({id:e.id,title:e.title,k,time:e.time,rem:15,where:e._g.where||"",outlook:true})})}
+  return out}
+function ntCheck(){
+  if(!ntOk()||!loaded)return;const now=Date.now();let changed=false;
+  for(const it of ntUpcoming()){if(!(it.rem>0))continue;
+    const start=new Date(it.k+"T"+it.time+":00").getTime(),at=start-it.rem*60000,key=it.id+"@"+it.k+"T"+it.time+"/"+it.rem;
+    if(now>=at&&now<start+60000&&!ntSent[key]){ntSent[key]=now;changed=true;
+      const mins=Math.max(0,Math.round((start-now)/60000));
+      const when=mins<=0?"Teraz":mins<60?`Za ${mins} min`:mins<1440?`Za ${Math.round(mins/60)} godz.`:"Jutro";
+      ntShow(`${when}: ${it.title}`,`${it.k===todayISO()?"Dziś":fmtDue(it.k)} o ${it.time}${it.where?" · "+it.where:""}${it.outlook?" · z Outlooka":""}`,key)}}
+  if(changed){const cut=now-3*86400000;for(const k in ntSent)if(ntSent[k]<cut)delete ntSent[k];try{localStorage.setItem(NT_KEY,JSON.stringify(ntSent))}catch(e){}}}
+setInterval(ntCheck,30000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")ntCheck()});
 
 function liHTML(t){const n=t.due?daysTo(t.due):null;
   return `<button class="li" data-open="${esc(t.id)}"><span class="dot" style="--c:${areaColor(t.area)}"></span><span class="t">${esc(t.title)}</span>${t.due?`<span class="due ${n<0?"late":n<=2?"soon":""}">${n<0?Math.abs(n)+" dni po terminie":n===0?"dziś":n===1?"jutro":fmtDue(t.due)}</span>`:""}</button>`}
@@ -857,6 +902,7 @@ function openEditor(t,preset,mode){
       <label class="f">Termin<input type="date" id="f-due" value="${esc(e.due)}"></label>
       <label class="f">Godzina<select id="f-time"><option value="">bez godziny</option>${(()=>{const all=[...SLOTS];if(e.time&&!all.includes(e.time))all.push(e.time);return all.sort().map(s=>`<option value="${s}" ${s===e.time?"selected":""}>${s}</option>`).join("")})()}</select></label>
       <label class="f">Czas trwania<select id="f-duration">${DURS.map(d=>`<option value="${d}" ${d===(+e.duration||30)?"selected":""}>${durTxt(d)}</option>`).join("")}</select></label>
+      <label class="f">🔔 Przypomnij<select id="f-remind">${REMINDS.map(([m,l])=>`<option value="${m}" ${m===remindOf(e)?"selected":""}>${l}</option>`).join("")}</select></label>
       <label class="f">Priorytet<select id="f-priority">${opts(PRIOS,e.priority)}</select></label>
       <label class="f">Poziom zaawansowania<select id="f-level">${opts(LEVELS,e.level)}</select></label>
       <label class="f">Osoby do zaangażowania<input id="f-people" value="${esc(e.people)}"></label>
@@ -1033,7 +1079,7 @@ async function save(){
   const prev=editing.status;
   const body={title,area:g("f-area"),status:g("f-status"),due:g("f-due"),time:g("f-due")?g("f-time"):"",duration:+g("f-duration")||30,kind:$("#f-event").checked?"event":"task",parked:$("#f-parked").checked,priority:g("f-priority"),level:g("f-level"),people:g("f-people"),
     steps:editing.steps.filter(s=>s.t.trim()).map(s=>({t:s.t.trim(),done:!!s.done})),next:g("f-next"),notes:g("f-notes"),link:g("f-link"),linkLabel:g("f-link")===(editing.link||"")?(editing.linkLabel||""):"",
-    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null,...(editing.file?{file:editing.file}:{}),...(editing.occ?{occ:editing.occ}:{})};
+    createdAt:editing.createdAt||new Date().toISOString(),doneAt:editing.doneAt||null,...(editing.file?{file:editing.file}:{}),...(editing.occ?{occ:editing.occ}:{}),remind:+g("f-remind")};
   // keep "Poziom zaawansowania: Zakończone" and "Status: Zrobione" in sync
   if(body.level==="Zakończone"&&body.status!=="done"&&(editing.level!=="Zakończone"||editing.status===body.status))body.status="done";
   else if(body.status!=="done"&&body.level==="Zakończone"&&editing.status==="done")body.level="Zaawansowane";
@@ -1084,6 +1130,7 @@ window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["bo
     if(!snap.metadata.fromCache||tasks.length){loaded=true;clearTimeout(timer);if(!snap.metadata.fromCache&&$("#status").textContent.startsWith("Brak"))$("#status").textContent=""}
     if(!drag?.started){renderFilters();render()}
     if(!document.activeElement?.closest?.("#daily"))renderDaily();
+    ntBtn();ntCheck();
     gcSchedule();
     if(loaded&&!tasks.length)$("#view").innerHTML=`<div class="empty">Nie masz jeszcze żadnych zadań. Kliknij <b>+ Nowe zadanie</b>, żeby dodać pierwsze.</div>`;
   },err=>{loaded=true;clearTimeout(timer);$("#status").textContent=err.code==="permission-denied"?"Brak dostępu do danych tego konta.":"Nie udało się wczytać zadań. Odśwież za chwilę.";render()});
