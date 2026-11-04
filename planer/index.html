@@ -711,6 +711,8 @@ let gcTok=null,gcExp=0,gcTC=null,gcBusy=false,gcTimer=null,gcLast=null,gcErr="",
 try{const s=JSON.parse(sessionStorage.getItem("gc-tok")||"null");if(s&&s.exp>Date.now()+60000){gcTok=s.t;gcExp=s.exp}}catch(e){}
 try{gcEvents=JSON.parse(localStorage.getItem("gc-events")||"[]");gcLast=localStorage.getItem("gc-last")}catch(e){}
 const gcOn=()=>!!gcTok&&gcExp>Date.now()+30000;
+let gcServer=null; // status written by the automatic sync (Google Apps Script, every 5 min)
+const gcAuto=()=>!!(gcServer&&gcServer.auto&&gcServer.last&&Date.now()-Date.parse(gcServer.last)<30*60000);
 function gcLoadLib(){return window.google?.accounts?.oauth2?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.onload=ok;s.onerror=()=>no(new Error("lib"));document.head.appendChild(s)})}
 async function gcConnect(){
   try{await gcLoadLib()}catch(e){toast("Nie mogę połączyć się z Google. Sprawdź internet.");return}
@@ -750,6 +752,7 @@ function gcBody(t){const r=isRepeat(t)?t.repeat:null,due=r?r.from:t.due,time=r?r
   b.recurrence=r?[gcRule(r)]:[];
   return b}
 async function gcSync(){
+  if(gcAuto()){gcBadge();return}
   if(!gcOn()){gcBadge();return}
   if(gcBusy)return;gcBusy=true;gcBadge();
   try{
@@ -785,14 +788,20 @@ async function gcSync(){
   }catch(e){gcErr=e.message==="auth"?"Połączenie z kalendarzem wygasło – kliknij, żeby odnowić.":"Błąd synchronizacji kalendarza. Spróbuję ponownie.";console.warn("gcal",e)}
   finally{gcBusy=false;gcBadge();if(view==="cal")render()}
 }
-function gcSchedule(ms=4000){clearTimeout(gcTimer);if(gcOn())gcTimer=setTimeout(gcSync,ms)}
-setInterval(()=>{if(gcOn()&&!gcBusy&&document.visibilityState==="visible")gcSync()},5*60000);
+function gcSchedule(ms=4000){clearTimeout(gcTimer);if(gcOn()&&!gcAuto())gcTimer=setTimeout(gcSync,ms)}
+setInterval(()=>{if(gcOn()&&!gcAuto()&&!gcBusy&&document.visibilityState==="visible")gcSync()},5*60000);
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")gcSchedule(1500)});
 function gcBadge(){const b=document.getElementById("gcBtn");if(!b)return;
+  if(gcAuto()){const t=new Date(gcServer.last).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"});
+    const bad=gcServer.lastErrorAt&&gcServer.lastErrorAt>gcServer.last;
+    b.textContent="✅ Outlook: automatycznie · "+t;b.classList.toggle("warn",!!bad);
+    b.title="Planer synchronizuje się z Outlookiem sam, co 5 minut – nie trzeba nic klikać. Ostatnia synchronizacja: "+t+".";
+    const m=document.getElementById("gcMsg");if(m)m.textContent=bad?"Ostatnia próba synchronizacji nie powiodła się – spróbuję ponownie za 5 minut.":"";return}
   const t=gcBusy?"🔄 Synchronizuję…":gcOn()?"🔄 Outlook: "+(gcLast?new Date(gcLast).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"}):"połączony"):"📅 Połącz z Outlookiem";
   b.textContent=t;b.title=gcErr||(gcOn()?"Kalendarz Google/Outlook jest połączony. Kliknij, żeby zsynchronizować teraz.":"Kliknij, żeby połączyć planer z kalendarzem Google, który widzisz w Outlooku.");
   b.classList.toggle("warn",!!gcErr);const m=document.getElementById("gcMsg");if(m)m.textContent=gcErr}
-function gcClick(){if(gcOn())gcSync();else gcConnect()}
+function gcClick(){if(gcAuto()){toast("Synchronizacja z Outlookiem działa automatycznie co 5 minut. Ostatnio: "+new Date(gcServer.last).toLocaleTimeString("pl-PL",{hour:"2-digit",minute:"2-digit"}));return}
+  if(gcOn())gcSync();else gcConnect()}
 /* external entries for a given day */
 function gcOnDay(k){return gcEvents.filter(e=>e.allDay?(k>=e.start&&k<e.end):e.start===k).map(e=>({id:"g:"+e.id,title:e.title,due:k,time:e.time,duration:e.duration,area:"Outlook",status:"todo",_g:e}))}
 function gcShow(id){const e=gcEvents.find(x=>"g:"+x.id===id);if(!e)return;
@@ -1136,6 +1145,9 @@ window.addEventListener("hashchange",()=>{const v=location.hash.slice(1);if(["bo
   },err=>{loaded=true;clearTimeout(timer);$("#status").textContent=err.code==="permission-denied"?"Brak dostępu do danych tego konta.":"Nie udało się wczytać zadań. Odśwież za chwilę.";render()});
   const dailyBusy=()=>!!document.activeElement?.closest?.("#daily");
   db.collection("weights").onSnapshot(snap=>{weights=snap.docs.map(d=>d.data()).filter(x=>x&&x.date&&typeof x.kg==="number");if(view==="weight"&&!document.activeElement?.closest?.("#wForm"))render();if(!dailyBusy()){dailyDraft=null;renderDaily()}},()=>{});
+  db.doc("gcal/events").onSnapshot(s=>{gcServer=s.exists?s.data():null;
+    if(gcServer&&Array.isArray(gcServer.events)&&gcAuto()){gcEvents=gcServer.events;gcLast=gcServer.last}
+    gcBadge();if(view==="cal"&&!drag?.started)render();ntCheck()},()=>{});
   db.collection("daily").onSnapshot(snap=>{daily={};snap.docs.forEach(d=>{const x=d.data();if(x&&x.date)daily[x.date]=x});if(!dailyBusy()){dailyDraft=null;renderDaily()}},()=>{});
   window.addEventListener("online",()=>{$("#status").textContent=""});
   window.addEventListener("offline",()=>{$("#status").textContent="Jesteś offline – zmiany zapiszą się w telefonie i wyślą, gdy wróci internet."});
