@@ -22,7 +22,7 @@
   --fg:#18202E; --muted:#5B6678; --faint:#8A94A6;
   --accent:#2D5BD8; --accent-ink:#FFFFFF; --accent-soft:#DCE5FB;
   --danger:#C23B3B; --danger-soft:#FBE3E3; --ok:#2E8B57; --ok-soft:#DDF2E5; --warn:#B7791F; --warn-soft:#FBEFD9;
-  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280; --a-outlook:#0F7C8C; --a-cw:#D9467A; --a-zad:#7C4DDB;
+  --a-majatek:#8E44AD; --a-praca:#2D5BD8; --a-zdrowie:#2E8B57; --a-angielski:#D48A0B; --a-inne:#6B7280; --a-outlook:#0F7C8C; --a-cw:#D9467A; --a-dieta:#C2410C; --a-zad:#7C4DDB;
   --shadow:0 1px 2px rgba(20,30,50,.06),0 4px 14px rgba(20,30,50,.06);
   --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
   --f-body:"Figtree","Segoe UI",system-ui,sans-serif;
@@ -33,14 +33,14 @@
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-zad:#A98BF5;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-dieta:#FB923C; --a-zad:#A98BF5;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#10141C; --surface:#1A202B; --sunk:#141922; --line:#2A3241;
   --fg:#E8ECF3; --muted:#A3ADBF; --faint:#717C90;
   --accent:#6E93FF; --accent-ink:#0D1220; --accent-soft:#22305A;
   --danger:#F07A7A; --danger-soft:#3D2024; --ok:#5CC98B; --ok-soft:#1C3527; --warn:#E8B04E; --warn-soft:#3A2E17;
-  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-zad:#A98BF5;
+  --a-majatek:#C084E8; --a-praca:#6E93FF; --a-zdrowie:#5CC98B; --a-angielski:#F0B23E; --a-inne:#9CA3AF; --a-outlook:#4CC3D3; --a-cw:#F27BA3; --a-dieta:#FB923C; --a-zad:#A98BF5;
   --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{background:var(--bg);color:var(--fg)}
@@ -449,7 +449,7 @@ let daily={}, dailyDate=null, dailyOpen=true, dailyDraft=null;
 try{dailyOpen=localStorage.getItem("planer-daily")!=="0"}catch(e){}
 const METRICS=[
   {k:"waga",l:"Waga",unit:"kg",c:"var(--a-zdrowie)",kg:true},
-  {k:"dieta",l:"Dieta",unit:"%",c:"var(--ok)"},
+  {k:"dieta",l:"Dieta",unit:"%",c:"var(--a-dieta)"},
   {k:"angielski",l:"Angielski",unit:"%",c:"var(--a-angielski)"},
   {k:"praca",l:"Praca",unit:"%",c:"var(--a-praca)"},
   {k:"cwiczenia",l:"Ćwiczenia",unit:"%",c:"var(--a-cw)"},
@@ -525,7 +525,7 @@ function renderWeight(el){
       <button class="btn primary" type="submit">Zapisz</button></form>
       <p class="note">Wpis z tą samą datą zastępuje poprzedni.</p></div>
     <div class="panel">${last?`<h3>Ostatni pomiar · ${fmtDue(last.date)}</h3><div class="w-now">${fmtKg(last.kg)}<small>kg</small></div><div class="w-deltas">${deltas}</div>`:`<h3>Brak pomiarów</h3><p class="note">Wpisz pierwszy pomiar obok.</p>`}</div></div>
-    <div class="panel" style="margin-bottom:14px"><h3>Waga i ćwiczenia</h3><div class="chart-box">${chartSVG(w,exSeries())}</div>${chartLegend()}</div>
+    <div class="panel" style="margin-bottom:14px"><h3>Waga, ćwiczenia i dieta</h3><div class="chart-box">${chartSVG(w,CH_SERIES.map(x=>({...x,pts:exSeries(x.k)})))}</div>${chartLegend()}</div>
     <div class="panel"><h3>Historia (${w.length})</h3>${w.length?`<div style="overflow-x:auto"><table class="w-table"><thead><tr><th>Data</th><th class="r">Waga</th><th class="r">Zmiana</th><th></th></tr></thead><tbody>${
       [...w].reverse().map((x,i,arr)=>{const prev=arr[i+1];return `<tr><td>${DOW_L[parse(x.date).getDay()]}, ${fmtDue(x.date)}</td><td class="r"><b>${fmtKg(x.kg)} kg</b></td><td class="r">${prev?deltaTxt(x.kg-prev.kg):"–"}</td><td class="r"><button class="x" data-wdel="${esc(x.date)}" aria-label="Usuń pomiar">×</button></td></tr>`}).join("")}</tbody></table></div>`:`<p class="note">Tu pojawi się lista pomiarów.</p>`}</div>`;
   $("#wForm").onsubmit=async ev=>{ev.preventDefault();const kg=parseFloat($("#w-kg").value.replace(",","."));const date=$("#w-date").value;
@@ -537,9 +537,11 @@ function renderWeight(el){
 }
 /* exercise progress (Mój dzień → Ćwiczenia, %) plotted one day later than it was done,
    so the weight of day D sits next to the exercise of day D-1 */
-function exSeries(){return Object.keys(daily).filter(k=>daily[k]&&daily[k].cwiczenia!=null).sort().map(k=>{const d=parse(k);d.setDate(d.getDate()+1);return{date:iso(d),from:k,v:+daily[k].cwiczenia}})}
-function chartLegend(){return `<div class="ch-leg"><span><i style="background:var(--a-zdrowie)"></i>Waga (kg) – lewa oś</span><span><i class="dash" style="border-color:var(--a-cw)"></i>Ćwiczenia (%) z dnia poprzedniego – prawa oś</span></div>`}
-function chartSVG(w,ex=[]){
+const CH_SERIES=[{k:"cwiczenia",l:"Ćwiczenia",c:"var(--a-cw)",dash:"6 4"},{k:"dieta",l:"Dieta",c:"var(--a-dieta)",dash:"2 4"}];
+function exSeries(key="cwiczenia"){return Object.keys(daily).filter(k=>daily[k]&&daily[k][key]!=null).sort().map(k=>{const d=parse(k);d.setDate(d.getDate()+1);return{date:iso(d),from:k,v:+daily[k][key]}})}
+function chartLegend(){return `<div class="ch-leg"><span><i style="background:var(--a-zdrowie)"></i>Waga (kg) – lewa oś</span>${CH_SERIES.map(x=>`<span><i class="dash ${x.k}" style="border-color:${x.c}"></i>${x.l} (%) z dnia poprzedniego – prawa oś</span>`).join("")}</div>`}
+function chartSVG(w,series=[]){
+  const ex=series.flatMap(x=>x.pts);
   if(!w.length&&!ex.length)return `<p class="note">Wykres pojawi się po pierwszym pomiarze wagi albo wpisie ćwiczeń w „Mój dzień”.</p>`;
   const W=760,H=250,L=46,R=46,T=16,B=30;
   const ts=[...w.map(x=>parse(x.date).getTime()),...ex.map(x=>parse(x.date).getTime())];
@@ -548,14 +550,14 @@ function chartSVG(w,ex=[]){
   const X=t=>L+(W-L-R)*(t-t0)/(t1-t0),Y=k=>T+(H-T-B)*(hi-k)/(hi-lo),Ye=v=>T+(H-T-B)*(100-v)/100;
   const step=Math.max(1,Math.ceil((hi-lo)/5));let grid="";
   for(let k=lo;k<=hi;k+=step)grid+=`<line x1="${L}" x2="${W-R}" y1="${Y(k)}" y2="${Y(k)}" stroke="var(--line)" stroke-width="1"/><text x="${L-8}" y="${Y(k)+4}" text-anchor="end">${k}</text>`;
-  for(const v of [0,25,50,75,100])grid+=`<text x="${W-R+8}" y="${Ye(v)+4}" text-anchor="start" style="fill:var(--a-cw)">${v}%</text>`;
+  for(const v of [0,25,50,75,100])grid+=`<text x="${W-R+8}" y="${Ye(v)+4}" text-anchor="start">${v}%</text>`;
   const days=Math.round((t1-t0)/864e5);const every=Math.max(1,Math.ceil(days/7));let xl="";
   for(let d=0;d<=days;d+=every){const t=t0+d*864e5;const dt=new Date(t);xl+=`<text x="${X(t)}" y="${H-10}" text-anchor="middle">${dt.getDate()}.${pad(dt.getMonth()+1)}</text>`}
-  // exercise line (drawn first, behind the weight)
-  const ep=ex.map(x=>[X(parse(x.date).getTime()),Ye(Math.max(0,Math.min(100,x.v))),x]);
-  const eline=ep.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
-  const exSvg=ep.length?`${ep.length>1?`<path d="${eline}" fill="none" stroke="var(--a-cw)" stroke-width="2" stroke-dasharray="6 4" stroke-linejoin="round"/>`:""}
-    ${ep.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--surface)" stroke="var(--a-cw)" stroke-width="2"><title>Ćwiczenia ${fmtDue(p[2].from)}: ${p[2].v}% (pokazane przy ${fmtDue(p[2].date)})</title></circle>`).join("")}`:"";
+  // daily % lines (exercise, diet), drawn first, behind the weight
+  const exSvg=series.map(sr=>{const ep=sr.pts.map(x=>[X(parse(x.date).getTime()),Ye(Math.max(0,Math.min(100,x.v))),x]);if(!ep.length)return "";
+    const ln=ep.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+    return `${ep.length>1?`<path d="${ln}" fill="none" stroke="${sr.c}" stroke-width="2" stroke-dasharray="${sr.dash}" stroke-linecap="round" stroke-linejoin="round"/>`:""}
+    ${ep.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="var(--surface)" stroke="${sr.c}" stroke-width="2"><title>${sr.l} ${fmtDue(p[2].from)}: ${p[2].v}% (pokazane przy ${fmtDue(p[2].date)})</title></circle>`).join("")}`}).join("");
   let wSvg="";
   if(w.length){const pts=w.map(x=>[X(parse(x.date).getTime()),Y(x.kg),x]);
     const line=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
@@ -564,7 +566,7 @@ function chartSVG(w,ex=[]){
     wSvg=`${area}${pts.length>1?`<path d="${line}" fill="none" stroke="var(--a-zdrowie)" stroke-width="2.5" stroke-linejoin="round"/>`:""}
     ${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="var(--a-zdrowie)"><title>Waga ${fmtDue(p[2].date)}: ${fmtKg(p[2].kg)} kg</title></circle>`).join("")}
     <circle cx="${lp[0]}" cy="${lp[1]}" r="6" fill="var(--surface)" stroke="var(--a-zdrowie)" stroke-width="3"/>
-    <text x="${Math.min(lp[0],W-R-40)}" y="${Math.max(lp[1]-12,T+10)}" text-anchor="middle" style="fill:var(--fg);font-weight:700">${fmtKg(w[w.length-1].kg)}</text>`}
+    <text x="${Math.min(lp[0],W-R-40)}" y="${Math.max(lp[1]-12,T+10)}" text-anchor="middle" style="fill:var(--fg);font-weight:700;stroke:var(--surface);stroke-width:4px;paint-order:stroke;stroke-linejoin:round">${fmtKg(w[w.length-1].kg)}</text>`}
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Wykres wagi i ćwiczeń w czasie">${grid}${xl}${exSvg}${wSvg}</svg>`;
 }
 function cardHTML(t){

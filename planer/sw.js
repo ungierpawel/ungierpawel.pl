@@ -1,6 +1,6 @@
 // Mój Planer – offline copy of the app. The page itself is always fetched fresh from the network
 // (bypassing the browser cache) and the stored copy is used only when there is no internet.
-const CACHE="planer-v15";
+const CACHE="planer-v16";
 const LIBS=["https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js",
  "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js",
  "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"];
